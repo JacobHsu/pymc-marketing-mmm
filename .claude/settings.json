@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(learn)",
+      "Skill(learn:*)",
+      "Bash(conda env *)",
+      "PowerShell(conda env list 2>&1)",
+      "PowerShell(Get-Command python)",
+      "PowerShell(python --version)",
+      "PowerShell(python -c \"import pymc_marketing; print\\(pymc_marketing.__version__\\)\" 2>&1)"
+    ]
+  }
+}

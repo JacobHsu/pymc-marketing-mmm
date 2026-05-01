@@ -1,0 +1,104 @@
+#   Copyright 2022 - 2026 The PyMC Labs Developers
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+"""Class to store and validate keyword argument for the Hilbert Space Gaussian Process (HSGP) components."""
+
+from enum import StrEnum
+from typing import Annotated, Any
+
+from pydantic import BaseModel, Field
+
+from pymc_marketing.serialization import serialization
+
+
+class CovFunc(StrEnum):
+    """Supported covariance functions for the HSGP model."""
+
+    ExpQuad = "expquad"
+    Matern52 = "matern52"
+    Matern32 = "matern32"
+
+
+@serialization.register
+class HSGPKwargs(BaseModel):
+    """HSGP keyword arguments for the time-varying prior.
+
+    See [1]_ and [2]_ for the theoretical background on the Hilbert Space Gaussian Process (HSGP).
+    See , [6]_ for a practical guide through the method using code examples.
+    See the :class:`~pymc.gp.HSGP` class for more information on the Hilbert Space Gaussian Process in PyMC.
+    We also recommend the following resources for a more practical introduction to HSGP: [3]_, [4]_, [5]_.
+
+    References
+    ----------
+    .. [1] Solin, A., Sarkka, S. (2019) Hilbert Space Methods for Reduced-Rank Gaussian Process Regression.
+    .. [2] Ruitort-Mayol, G., and Anderson, M., and Solin, A., and Vehtari, A. (2022). Practical Hilbert Space Approximate Bayesian Gaussian Processes for Probabilistic Programming.
+    .. [3] PyMC Example Gallery: `"Gaussian Processes: HSGP Reference & First Steps" <https://www.pymc.io/projects/examples/en/latest/gaussian_processes/HSGP-Basic.html>`_.
+    .. [4] PyMC Example Gallery: `"Gaussian Processes: HSGP Advanced Usage" <https://www.pymc.io/projects/examples/en/latest/gaussian_processes/HSGP-Advanced.html>`_.
+    .. [5] PyMC Example Gallery: `"Baby Births Modelling with HSGPs" <https://www.pymc.io/projects/examples/en/latest/gaussian_processes/GP-Births.html>`_.
+    .. [6] Orduz, J. `"A Conceptual and Practical Introduction to Hilbert Space GPs Approximation Methods" <https://juanitorduz.github.io/hsgp_intro/>`_.
+
+    Parameters
+    ----------
+    m : int
+        Number of basis functions. Default is 200.
+    L : float, optional
+        Extent of basis functions. Set this to reflect the expected range of in+out-of-sample data
+        (considering that time-indices are zero-centered).Default is `X_mid * 2` (identical to `c=2` in HSGP).
+        By default it is None.
+    eta_lam : float
+        Exponential prior for the variance. Default is 1.
+    ls_mu : float
+        Mean of the inverse gamma prior for the lengthscale. Default is 5.
+    ls_sigma : float
+        Standard deviation of the inverse gamma prior for the lengthscale. Default is 5.
+    cov_func : CovFunc, optional
+        Covariance function enum. Supported values: ``ExpQuad``, ``Matern52``, ``Matern32``.
+        By default it is None (resolved to ``Matern52`` at model-build time).
+    """  # noqa E501
+
+    m: int = Field(200, description="Number of basis functions")
+    L: (
+        Annotated[
+            float,
+            Field(
+                gt=0,
+                description="""
+                Extent of basis functions. Set this to reflect the expected range of in+out-of-sample data
+                (considering that time-indices are zero-centered).Default is `X_mid * 2` (identical to `c=2` in HSGP)
+                """,
+            ),
+        ]
+        | None
+    ) = None
+    eta_lam: float = Field(1.0, gt=0, description="Exponential prior for the variance")
+    ls_mu: float = Field(
+        5.0, gt=0, description="Mean of the inverse gamma prior for the lengthscale"
+    )
+    ls_sigma: float = Field(
+        5.0,
+        gt=0,
+        description="Standard deviation of the inverse gamma prior for the lengthscale",
+    )
+    cov_func: CovFunc | None = Field(
+        None, description="Covariance function enum (ExpQuad, Matern52, Matern32)"
+    )
+
+    def to_dict(self) -> dict[str, Any]:
+        """Serialize to a dict. ``__type__`` is injected by the registry wrapper."""
+        return self.model_dump(mode="json")
+
+    @classmethod
+    def from_dict(cls, data: dict[str, Any]) -> "HSGPKwargs":
+        """Reconstruct from a dict."""
+        filtered = {k: v for k, v in data.items() if k != "__type__"}
+        return cls.model_validate(filtered)

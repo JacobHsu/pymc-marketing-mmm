@@ -1,0 +1,555 @@
+#   Copyright 2022 - 2026 The PyMC Labs Developers
+#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#       http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+"""Saturation transformations for the MMM model.
+
+Each of these transformations is a subclass of
+:class:`pymc_marketing.mmm.components.saturation.SaturationTransformation` and defines a function
+that takes media and return the saturated media. The parameters of the function
+are the parameters of the saturation transformation.
+
+Examples
+--------
+Create a new saturation transformation:
+
+.. code-block:: python
+
+    from pymc_marketing.mmm import SaturationTransformation
+    from pymc_extras.prior import Prior
+
+
+    from pymc_marketing.serialization import serialization
+
+
+    @serialization.register
+    class InfiniteReturns(SaturationTransformation):
+        def function(self, x, b):
+            return b * x
+
+        default_priors = {"b": Prior("HalfNormal", sigma=1)}
+
+Plot the default priors for a saturation transformation:
+
+.. code-block:: python
+
+    from pymc_marketing.mmm import HillSaturation
+
+    import matplotlib.pyplot as plt
+
+    saturation = HillSaturation()
+    prior = saturation.sample_prior()
+    curve = saturation.sample_curve(prior)
+    saturation.plot_curve(curve)
+    plt.show()
+
+Define a hierarchical saturation function with only hierarchical parameters
+for saturation parameter of logistic saturation.
+
+.. code-block:: python
+
+    from pymc_extras.prior import Prior
+    from pymc_marketing.mmm import LogisticSaturation
+
+    hierarchical_lam = Prior(
+        "Gamma",
+        alpha=Prior("HalfNormal"),
+        beta=Prior("HalfNormal"),
+        dims="channel",
+    )
+    priors = {
+        "lam": hierarchical_lam,
+        "beta": Prior("HalfNormal", dims="channel"),
+    }
+    saturation = LogisticSaturation(priors=priors)
+
+"""
+
+from __future__ import annotations
+
+import warnings
+from typing import Any
+
+import numpy as np
+import xarray as xr
+from pydantic import Field, InstanceOf, validate_call
+from pymc_extras.deserialize import deserialize
+from pymc_extras.prior import Prior
+from pytensor.xtensor import as_xtensor
+
+from pymc_marketing.mmm.components.base import (
+    Transformation,
+)
+from pymc_marketing.mmm.transformers import (
+    hill_function,
+    hill_saturation_sigmoid,
+    inverse_scaled_logistic_saturation,
+    logistic_saturation,
+    michaelis_menten,
+    root_saturation,
+    tanh_saturation,
+    tanh_saturation_baselined,
+)
+from pymc_marketing.serialization import serialization
+
+
+class SaturationTransformation(Transformation):
+    """Subclass for all saturation transformations.
+
+    In order to use a custom saturation transformation, subclass and define:
+
+    - `function`: function to take x to contributions
+    - `default_priors`: default distributions for each parameter in function
+
+    By subclassing from this method, lift test integration will come for free!
+
+    Examples
+    --------
+    Make a non-saturating saturation transformation
+
+    .. code-block:: python
+
+        from pymc_marketing.mmm import SaturationTransformation
+        from pymc_extras.prior import Prior
+
+
+        def infinite_returns(x, b):
+            return b * x
+
+
+        class InfiniteReturns(SaturationTransformation):
+            function = infinite_returns
+            default_priors = {"b": Prior("HalfNormal")}
+
+    Make use of plotting capabilities to understand the transformation and its
+    priors
+
+    .. code-block:: python
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+
+        saturation = InfiniteReturns()
+
+        rng = np.random.default_rng(0)
+
+        prior = saturation.sample_prior(random_seed=rng)
+        curve = saturation.sample_curve(prior)
+        saturation.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    prefix: str = "saturation"
+
+    @classmethod
+    def from_dict(cls, data: dict) -> SaturationTransformation:
+        """Reconstruct a saturation transformation from a dict."""
+        data = data.copy()
+        data.pop("__type__", None)
+        data.pop(
+            "lookup_name", None
+        )  # TODO(1.0): Remove once Legacy MMM is removed (#2430)
+
+        if "priors" in data:
+            from pymc_extras.deserialize import deserialize
+
+            data["priors"] = {k: deserialize(v) for k, v in data["priors"].items()}
+
+        return cls(**data)
+
+    @validate_call
+    def sample_curve(
+        self,
+        parameters: InstanceOf[xr.Dataset] = Field(
+            ..., description="Parameters of the saturation transformation."
+        ),
+        max_value: float = Field(1.0, gt=0, description="Maximum range value."),
+        num_points: int = Field(
+            100, gt=0, description="Number of points between 0 and max_value."
+        ),
+        **sample_prior_predictive_kwargs: Any,
+    ) -> xr.DataArray:
+        """Sample the curve of the saturation transformation given parameters.
+
+        Parameters
+        ----------
+        parameters : xr.Dataset
+            Dataset with the parameters of the saturation transformation.
+        max_value : float, optional
+            Maximum value of the curve, by default 1.0.
+        num_points : int, optional
+            Number of points between 0 and max_value, by default 100.
+        sample_prior_predictive_kwargs : Any
+            Pass kwargs to pm.sample_prior_predictive
+
+        Returns
+        -------
+        xr.DataArray
+            Curve of the saturation transformation.
+
+        """
+        x = np.linspace(0, max_value, num_points)
+
+        return self._sample_curve(
+            var_name="saturation",
+            parameters=parameters,
+            x=x,
+            coords={"x": x},
+            **sample_prior_predictive_kwargs,
+        )
+
+
+@serialization.register
+class LogisticSaturation(SaturationTransformation):
+    """Wrapper around logistic saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.logistic_saturation`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import LogisticSaturation
+
+        rng = np.random.default_rng(0)
+
+        adstock = LogisticSaturation()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, lam, beta, *, dim: str | None = None):
+        """Logistic saturation function."""
+        return beta * logistic_saturation(x, lam)
+
+    default_priors = {
+        "lam": Prior("Gamma", alpha=3, beta=1),
+        "beta": Prior("HalfNormal", sigma=2),
+    }
+
+
+@serialization.register
+class InverseScaledLogisticSaturation(SaturationTransformation):
+    """Wrapper around inverse scaled logistic saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.inverse_scaled_logistic_saturation`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import InverseScaledLogisticSaturation
+
+        rng = np.random.default_rng(0)
+
+        adstock = InverseScaledLogisticSaturation()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, lam, beta, *, dim: str | None = None):
+        """Inverse scaled logistic saturation function."""
+        return beta * inverse_scaled_logistic_saturation(x, lam)
+
+    default_priors = {
+        "lam": Prior("Gamma", alpha=0.5, beta=1),
+        "beta": Prior("HalfNormal", sigma=2),
+    }
+
+
+@serialization.register
+class TanhSaturation(SaturationTransformation):
+    """Wrapper around tanh saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.tanh_saturation`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import TanhSaturation
+
+        rng = np.random.default_rng(0)
+
+        adstock = TanhSaturation()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, b, c, *, dim: str | None = None):
+        """Tanh saturation function."""
+        return tanh_saturation(x, b, c)
+
+    default_priors = {
+        "b": Prior("HalfNormal", sigma=1),
+        "c": Prior("HalfNormal", sigma=1),
+    }
+
+
+@serialization.register
+class TanhSaturationBaselined(SaturationTransformation):
+    """Wrapper around tanh saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.tanh_saturation_baselined`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import TanhSaturationBaselined
+
+        rng = np.random.default_rng(0)
+
+        adstock = TanhSaturationBaselined()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, x0, gain, r, beta, *, dim: str | None = None):
+        """Tanh saturation function."""
+        return beta * tanh_saturation_baselined(x, x0, gain, r)
+
+    default_priors = {
+        "x0": Prior("HalfNormal", sigma=1),
+        "gain": Prior("HalfNormal", sigma=1),
+        "r": Prior("HalfNormal", sigma=1),
+        "beta": Prior("HalfNormal", sigma=1),
+    }
+
+
+@serialization.register
+class MichaelisMentenSaturation(SaturationTransformation):
+    """Wrapper around Michaelis-Menten saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.michaelis_menten`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import MichaelisMentenSaturation
+
+        rng = np.random.default_rng(0)
+
+        adstock = MichaelisMentenSaturation()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, alpha, lam, *, dim: str | None = None):
+        """Michaelis-Menten saturation function."""
+        return michaelis_menten(x, alpha, lam)
+
+    default_priors = {
+        "alpha": Prior("Gamma", mu=2, sigma=1),
+        "lam": Prior("HalfNormal", sigma=1),
+    }
+
+
+@serialization.register
+class HillSaturation(SaturationTransformation):
+    """Wrapper around Hill saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.hill_function`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import HillSaturation
+
+        rng = np.random.default_rng(0)
+
+        adstock = HillSaturation()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, slope, kappa, beta, *, dim: str | None = None):
+        """Hill saturation function."""
+        return beta * hill_function(x, slope, kappa)
+
+    default_priors = {
+        "slope": Prior("HalfNormal", sigma=1.5),
+        "kappa": Prior("HalfNormal", sigma=1.5),
+        "beta": Prior("HalfNormal", sigma=1.5),
+    }
+
+
+@serialization.register
+class HillSaturationSigmoid(SaturationTransformation):
+    """Wrapper around Hill saturation sigmoid function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.hill_saturation_sigmoid`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import HillSaturationSigmoid
+
+        rng = np.random.default_rng(0)
+
+        adstock = HillSaturationSigmoid()
+        prior = adstock.sample_prior(random_seed=rng)
+        curve = adstock.sample_curve(prior)
+        adstock.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, sigma, beta, lam, *, dim: str | None = None):
+        """Hill sigmoid function."""
+        return hill_saturation_sigmoid(x, sigma, beta, lam)
+
+    default_priors = {
+        "sigma": Prior("HalfNormal", sigma=1.5),
+        "beta": Prior("HalfNormal", sigma=1.5),
+        "lam": Prior("HalfNormal", sigma=1.5),
+    }
+
+
+@serialization.register
+class RootSaturation(SaturationTransformation):
+    """Wrapper around Root saturation function.
+
+    For more information, see :func:`pymc_marketing.mmm.transformers.root_saturation`.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import RootSaturation
+
+        rng = np.random.default_rng(0)
+
+        saturation = RootSaturation()
+        prior = saturation.sample_prior(random_seed=rng)
+        curve = saturation.sample_curve(prior)
+        saturation.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, alpha, beta, *, dim: str | None = None):
+        """Root saturation function."""
+        return beta * root_saturation(x, alpha)
+
+    default_priors = {
+        "alpha": Prior("Beta", alpha=1, beta=2),
+        "beta": Prior("Gamma", mu=1, sigma=1),
+    }
+
+
+@serialization.register
+class NoSaturation(SaturationTransformation):
+    """Wrapper around linear saturation function.
+
+    .. plot::
+        :context: close-figs
+
+        import matplotlib.pyplot as plt
+        import numpy as np
+        from pymc_marketing.mmm import NoSaturation
+
+        rng = np.random.default_rng(0)
+
+        saturation = NoSaturation()
+        prior = saturation.sample_prior(random_seed=rng)
+        curve = saturation.sample_curve(prior)
+        saturation.plot_curve(curve, random_seed=rng)
+        plt.show()
+
+    """
+
+    def function(self, x, beta, *, dim: str | None = None):
+        """Linear saturation function."""
+        x = as_xtensor(x)
+        beta = as_xtensor(beta)
+        return beta * x
+
+    default_priors = {"beta": Prior("HalfNormal", sigma=1)}
+
+
+# TODO(1.0): Remove this dict once Legacy MMM is removed (see #2430)
+SATURATION_TRANSFORMATIONS: dict[str, type[SaturationTransformation]] = {
+    "logistic": LogisticSaturation,
+    "inverse_scaled_logistic": InverseScaledLogisticSaturation,
+    "tanh": TanhSaturation,
+    "tanh_baselined": TanhSaturationBaselined,
+    "michaelis_menten": MichaelisMentenSaturation,
+    "hill": HillSaturation,
+    "hill_sigmoid": HillSaturationSigmoid,
+    "root": RootSaturation,
+    "no_saturation": NoSaturation,
+}
+
+
+def saturation_from_dict(data: dict) -> SaturationTransformation:
+    """Get a saturation function from a dictionary.
+
+    .. deprecated:: 0.18.2
+        `saturation_from_dict` is deprecated and will be removed in 0.20.0.
+        Use ``from pymc_marketing.serialization import serialization; serialization.deserialize(data)`` instead.
+    """
+    warnings.warn(
+        "saturation_from_dict is deprecated and will be removed in 0.20.0. "
+        "Use `from pymc_marketing.serialization import serialization; "
+        "serialization.deserialize(data)` instead.",
+        FutureWarning,
+        stacklevel=2,
+    )
+    data = data.copy()
+    type_key = data.pop("__type__", None)
+    lookup_name = data.pop("lookup_name", None)
+
+    if lookup_name:
+        cls = SATURATION_TRANSFORMATIONS[lookup_name]
+    elif type_key:
+        return serialization.deserialize({**data, "__type__": type_key})
+    else:
+        raise ValueError(
+            "Cannot deserialize saturation: missing both 'lookup_name' and '__type__'"
+        )
+
+    if "priors" in data:
+        data["priors"] = {
+            key: deserialize(value) for key, value in data["priors"].items()
+        }
+    return cls(**data)
