@@ -1,0 +1,74 @@
+"""AI 圖表分析：使用 Claude API 視覺能力分析 MMM 圖表。"""
+
+from __future__ import annotations
+
+import base64
+import io
+
+import matplotlib.pyplot as plt
+
+
+def fig_to_base64(fig: plt.Figure) -> str:
+    """將 matplotlib 圖表轉換為 base64 編碼的 PNG 字串。"""
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", dpi=100, bbox_inches="tight")
+    buf.seek(0)
+    return base64.standard_b64encode(buf.read()).decode("utf-8")
+
+
+def analyze_chart_with_claude(
+    fig: plt.Figure,
+    channel_cols: list[str],
+    api_key: str,
+    prompt_zh: str | None = None,
+) -> str:
+    """將圖表傳送給 Claude API 進行視覺分析，回傳繁體中文分析文字。
+
+    Args:
+        fig: 要分析的 matplotlib Figure。
+        channel_cols: 圖中包含的頻道名稱列表（用於 prompt 背景說明）。
+        api_key: Anthropic API Key。
+        prompt_zh: 自訂分析提示，None 時使用預設頻道貢獻分析提示。
+    """
+    import anthropic
+
+    img_b64 = fig_to_base64(fig)
+    channels_str = "、".join(channel_cols)
+
+    if prompt_zh is None:
+        prompt_zh = f"""這是一張 Media Mix Modeling（MMM）的各頻道銷售貢獻時間序列圖。
+圖中包含以下廣告頻道：{channels_str}。
+彩色填滿區域代表各頻道每週的銷售貢獻量，Y 軸為銷售貢獻值，X 軸為時間週次。
+
+請以繁體中文，從行銷業務的角度分析這張圖，提供以下洞察：
+1. **主要貢獻頻道**：哪些頻道的銷售貢獻最大？整體佔比如何？
+2. **趨勢與季節性**：是否有明顯的週期性波動或長期趨勢？
+3. **策略建議**：基於此貢獻分布，預算分配應如何調整以最大化 ROAS？
+
+請用條列式、簡明扼要的方式回答，約 150-200 字。"""
+
+    client = anthropic.Anthropic(api_key=api_key)
+    message = client.messages.create(
+        model="claude-opus-4-7",
+        max_tokens=1024,
+        messages=[
+            {
+                "role": "user",
+                "content": [
+                    {
+                        "type": "image",
+                        "source": {
+                            "type": "base64",
+                            "media_type": "image/png",
+                            "data": img_b64,
+                        },
+                    },
+                    {
+                        "type": "text",
+                        "text": prompt_zh,
+                    },
+                ],
+            }
+        ],
+    )
+    return message.content[0].text

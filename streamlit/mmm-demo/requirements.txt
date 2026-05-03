@@ -1,0 +1,10 @@
+streamlit>=1.35
+pymc-marketing>=0.9
+pymc-extras
+openai
+python-dotenv
+huggingface_hub
+pandas
+numpy
+matplotlib
+arviz

@@ -1,0 +1,54 @@
+"""AI 資料分析：使用 NVIDIA NIM API 分析 MMM 數據，提供行銷洞察。"""
+
+from __future__ import annotations
+
+import numpy as np
+import pandas as pd
+
+
+def analyze_roas_with_llm(
+    roas_df: pd.DataFrame,
+    channel_cols: list[str],
+    api_key: str,
+) -> str:
+    """將 ROAS 數據傳給 LLM，回傳繁體中文行銷洞察。
+
+    使用 NVIDIA NIM API（OpenAI 相容），模型：meta/llama-3.3-70b-instruct。
+    """
+    from openai import OpenAI
+
+    client = OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=api_key,
+    )
+
+    # 格式化數據為易讀文字
+    rows = []
+    for _, row in roas_df.iterrows():
+        rows.append(
+            f"  - {row['頻道']}：ROAS={row['ROAS']:.2f}x，"
+            f"貢獻銷售額={row['總貢獻（銷售額）']:,.0f}，"
+            f"總花費={row['總花費']:,.4f}"
+        )
+    data_text = "\n".join(rows)
+
+    prompt = f"""你是一位資深行銷分析師，請根據以下 Media Mix Modeling（MMM）模型的估計結果，提供繁體中文分析。
+
+各廣告頻道效益數據：
+{data_text}
+
+ROAS 說明：ROAS = 廣告帶來的銷售額 / 廣告花費。ROAS > 1 代表正向回報，越高越好。
+
+請提供以下分析（條列式，約 150-200 字）：
+1. **表現最佳頻道**：ROAS 最高的頻道，建議加碼投資
+2. **表現待改善頻道**：ROAS 偏低的頻道，需重新評估策略
+3. **預算分配建議**：根據 ROAS 排名，給出具體的預算調整方向
+4. **一句話總結**：整體媒體組合的效率評估"""
+
+    response = client.chat.completions.create(
+        model="meta/llama-3.3-70b-instruct",
+        messages=[{"role": "user", "content": prompt}],
+        max_tokens=600,
+        temperature=0.3,
+    )
+    return response.choices[0].message.content

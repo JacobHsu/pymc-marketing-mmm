@@ -6,6 +6,21 @@
 - Run `pre-commit` every time you create or modify a file.
 - Temporary or test scripts that are not meant to be committed should be created in the `sandbox/` folder.
 
+## Documentation Rule
+
+Every time a code change is verified to work, **immediately update the relevant docs**:
+
+- Bug fix or workaround discovered → add to the relevant README `## 常見問題` section
+- New required step discovered (e.g., `conda install gxx`) → add to the setup/startup section
+- Default value changed → update the description text to match
+- New parameter added → add to the parameter table and summary
+
+The target doc files for the Streamlit demo are:
+- `sandbox/streamlit_demo/README.zh-CN.md` — setup, startup, FAQ
+- Page files (`pages/*.py`) — inline `st.markdown` descriptions
+
+Do not wait until the end of a conversation. Update docs **in the same step** as the code change.
+
 ## Skills (shared with Cursor)
 
 Domain knowledge and workflow skills live in `.cursor/skills/`. Read the relevant

@@ -1,9 +1,9 @@
 name: URL Health
 
 on:
-  schedule:
-    # * is a special character in YAML so you have to quote this string
-    - cron:  '0 */6 * * *'
+  workflow_dispatch:  # 暫停定時觸發，待 mmm-demo 部屬後改回每天一次
+  # schedule:
+  #   - cron: '0 9 * * *'  # 每天 09:00 UTC，部屬後取消註解並更新 URL
 
 jobs:
 
