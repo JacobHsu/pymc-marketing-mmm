@@ -4,6 +4,7 @@ mlruns.db
 
 # InferenceData
 *.nc
+*.nc.bak
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

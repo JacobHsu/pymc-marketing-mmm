@@ -136,6 +136,113 @@ streamlit run app.py --server.port 8502
 
 ---
 
+## 雲端部署（Streamlit Community Cloud）
+
+> 與 mmm-explainer 相同平台，免費、無需伺服器。
+
+### 前置條件
+
+| 必要 | 說明 |
+|------|------|
+| GitHub repo | 程式碼需推送至 GitHub public/private repo |
+| Streamlit Community Cloud 帳號 | [share.streamlit.io](https://share.streamlit.io) 免費方案 |
+| Hugging Face 帳號（可選） | 存放 `fitted_mmm.nc`，若不需 AI 模型預載可跳過 |
+
+---
+
+### Step 1：上傳模型檔到 Hugging Face（若需要預載模型）
+
+Streamlit Cloud 是無狀態容器，`data/fitted_mmm.nc` **不能放進 git**（檔案太大），需改從 HF Hub 下載。
+
+```bash
+# 安裝 HF CLI
+pip install huggingface_hub
+
+# 登入（只需做一次）
+huggingface-cli login
+
+# 建立 dataset repo（若尚未建立）
+# 至 https://huggingface.co/new-dataset 建立，例如 jacobhsutw/mmm-demo-model
+
+# 上傳模型檔
+huggingface-cli upload jacobhsutw/mmm-demo-model data/fitted_mmm.nc fitted_mmm.nc --repo-type dataset
+```
+
+---
+
+### Step 2：確認 .gitignore 排除本機敏感檔
+
+```gitignore
+streamlit/mmm-demo/.env
+streamlit/mmm-demo/data/fitted_mmm.nc
+streamlit/mmm-demo/data/fitted_mmm.nc.bak
+```
+
+---
+
+### Step 3：推送至 GitHub
+
+```powershell
+git add streamlit/mmm-demo/
+git commit -m "feat: add mmm-demo streamlit app"
+git push origin main
+```
+
+---
+
+### Step 4：在 Streamlit Community Cloud 建立 App
+
+1. 前往 [share.streamlit.io](https://share.streamlit.io) → **Create app**
+2. 填入：
+   | 欄位 | 值 |
+   |------|-----|
+   | Repository | `JacobHsu/pymc-marketing-mmm` |
+   | Branch | `main` |
+   | Main file path | `streamlit/mmm-demo/app.py` |
+3. 點 **Advanced settings**，設定以下兩項後點 **Deploy**
+
+---
+
+### Step 5：Advanced settings 設定
+
+**Python version** → 選 `3.12`
+
+**Secrets** → 填入以下內容（TOML 格式，字串值必須加雙引號）：
+
+```toml
+NVIDIA_API_KEY = "nvapi-your-key-here"
+HF_REPO_ID = "jacobhsutw/mmm-demo-model"
+```
+
+> **注意**：格式與本機 `.env` 不同。`.env` 用 `KEY=value`，Streamlit Secrets 用 `KEY = "value"`（等號兩側空格，值加雙引號）。
+
+> Streamlit Cloud 的 Secrets 等同本機的 `.env`，不會暴露在 GitHub。
+
+---
+
+### Step 6：等待部署完成
+
+首次部署需安裝 PyMC 等重套件，約需 **5–10 分鐘**。部署完成後網址格式：
+`https://your-app-name.streamlit.app/`
+
+---
+
+### 常見部署問題
+
+**`Invalid format: please enter valid TOML`**
+→ Secrets 格式錯誤。確認每個值都加了雙引號，例如 `KEY = "value"`，不能寫成 `KEY=value`。
+
+**`ModuleNotFoundError` on Streamlit Cloud**
+→ 確認 `requirements.txt` 包含所有依賴，且路徑為 `streamlit/mmm-demo/requirements.txt`。
+
+**模型檔找不到**
+→ 確認 `HF_REPO_ID` Secret 已設定，且 HF dataset repo 為 **Public**（或提供 HF Token）。
+
+**部署超時（Timeout）**
+→ PyMC 初始化較慢屬正常。若持續逾時可在 App Settings 增加 Memory。
+
+---
+
 ## 相關資料
 
 - [PyMC-Marketing 專案 README](../../README.zh-TW.md)
