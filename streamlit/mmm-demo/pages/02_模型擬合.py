@@ -12,8 +12,10 @@ from components.mmm_runner import (
 )
 from components.charts import plot_posterior_predictive
 from components.ai_analysis import analyze_fit_with_llm
+from components.progress import render_sidebar_progress
 
 st.set_page_config(page_title="模型擬合", page_icon="⚙️", layout="wide")
+render_sidebar_progress()
 
 st.title("⚙️ 模型擬合")
 
@@ -60,7 +62,8 @@ if "mmm" not in st.session_state and saved_model_exists():
             try:
                 mmm = load_mmm()
                 st.session_state["mmm"] = mmm
-                st.session_state.pop("fit_analysis", None)
+                for _k in ("fit_analysis", "roas_df", "fig_roas", "fig_contrib_time", "fig_waterfall", "fig_contrib_share"):
+                    st.session_state.pop(_k, None)
             except Exception as e:
                 st.error(f"載入失敗：{e}")
                 st.stop()
@@ -201,7 +204,8 @@ if fit_button:
             "chains": chains,
             "target_accept": target_accept,
         }
-        st.session_state.pop("fit_analysis", None)
+        for _k in ("fit_analysis", "roas_df", "fig_roas", "fig_contrib_time", "fig_waterfall", "fig_contrib_share"):
+            st.session_state.pop(_k, None)
 
         with st.spinner("💾 存檔中..."):
             try:

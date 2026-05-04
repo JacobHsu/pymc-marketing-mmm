@@ -64,6 +64,9 @@ test.nc
 test_*.nc
 tmp-model
 
+# ruff-format atomic write temp files (Windows residue)
+*.tmp.*
+
 # Translations
 *.mo
 *.pot

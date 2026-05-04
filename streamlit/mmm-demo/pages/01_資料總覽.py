@@ -10,16 +10,16 @@ if _root not in sys.path:
 
 import streamlit as st
 import pandas as pd
-import matplotlib
-matplotlib.use("Agg")  # 避免 GUI backend 衝突
-import matplotlib.pyplot as plt
 
 from components.matplotlib_config import configure_matplotlib_fonts
 from components.mmm_runner import DATASETS, load_sample_data
+from components.progress import render_sidebar_progress
+from components.charts import plot_channel_overview, plot_spend_distribution, plot_spend_share_pie
 
 configure_matplotlib_fonts()
 
 st.set_page_config(page_title="資料總覽", page_icon="📈", layout="wide")
+render_sidebar_progress()
 
 st.title("📈 資料總覽")
 st.markdown("了解你的資料結構：銷售趨勢、各頻道花費節奏和分布。")
@@ -82,22 +82,12 @@ with st.expander("💡 怎麼看這張圖？", expanded=False):
     """)
 
 try:
-    n_rows = len(channel_cols) + 1
-    fig, axes = plt.subplots(n_rows, 1, figsize=(12, 3 * n_rows), sharex=True)
-    if n_rows == 1:
-        axes = [axes]
-
-    axes[0].plot(pd.to_datetime(data[date_col]), data[target_col], color="black", linewidth=2)
-    axes[0].set(ylabel="銷售額", title="目標變數：銷售額")
-
-    for i, ch in enumerate(channel_cols):
-        axes[i + 1].plot(pd.to_datetime(data[date_col]), data[ch], color=f"C{i}", linewidth=2)
-        axes[i + 1].set(ylabel="花費", title=f"頻道 {ch}（廣告花費）")
-
-    axes[-1].set(xlabel="日期")
-    fig.tight_layout()
-    st.pyplot(fig)
-    plt.close(fig)
+    if "fig_ts_overview" not in st.session_state:
+        with st.spinner("繪製時間序列圖中..."):
+            st.session_state["fig_ts_overview"] = plot_channel_overview(
+                data, date_col, channel_cols, target_col
+            )
+    st.pyplot(st.session_state["fig_ts_overview"])
 except Exception as e:
     st.error(f"時間序列圖繪製失敗：{e}")
 
@@ -113,13 +103,10 @@ with col_left:
     with st.expander("💡 箱形圖說明"):
         st.markdown("中間橫線 = 中位數；箱子 = 25%-75% 分位數；鬍鬚 = 最大/最小值；圓點 = 離群值")
     try:
-        fig_box, ax = plt.subplots(figsize=(8, 4))
-        spend_data = [data[ch].values for ch in channel_cols]
-        ax.boxplot(spend_data, labels=channel_cols, patch_artist=True)
-        ax.set(title="各頻道花費分布", xlabel="頻道", ylabel="花費（標準化）")
-        fig_box.tight_layout()
-        st.pyplot(fig_box)
-        plt.close(fig_box)
+        if "fig_spend_box" not in st.session_state:
+            with st.spinner("繪製箱形圖中..."):
+                st.session_state["fig_spend_box"] = plot_spend_distribution(data, channel_cols)
+        st.pyplot(st.session_state["fig_spend_box"])
     except Exception as e:
         st.error(f"箱形圖失敗：{e}")
 
@@ -128,13 +115,10 @@ with col_right:
     with st.expander("💡 花費佔比的意義"):
         st.markdown("花費佔比高的頻道，在設定先驗分佈時會給較大的 sigma（允許更強的效果）")
     try:
-        shares = data[channel_cols].sum()
-        fig_pie, ax = plt.subplots(figsize=(6, 6))
-        ax.pie(shares, labels=channel_cols, autopct="%1.1f%%", startangle=90,
-               colors=[f"C{i}" for i in range(len(channel_cols))])
-        ax.set_title("各頻道花費佔比")
-        st.pyplot(fig_pie)
-        plt.close(fig_pie)
+        if "fig_spend_pie" not in st.session_state:
+            with st.spinner("繪製圓餅圖中..."):
+                st.session_state["fig_spend_pie"] = plot_spend_share_pie(data, channel_cols)
+        st.pyplot(st.session_state["fig_spend_pie"])
     except Exception as e:
         st.error(f"圓餅圖失敗：{e}")
 

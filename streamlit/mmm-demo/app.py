@@ -18,6 +18,7 @@ load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
 sys.path.insert(0, os.path.dirname(__file__))
 
 from components.mmm_runner import load_sample_data
+from components.progress import render_sidebar_progress
 
 st.set_page_config(
     page_title="MMM 行銷組合模型 DEMO",
@@ -65,6 +66,8 @@ else:
         st.session_state["control_columns"] = control_cols
         st.session_state["date_column"] = date_col
         st.session_state["target_column"] = target_col
+
+render_sidebar_progress()
 
 st.sidebar.divider()
 st.sidebar.caption("💡 先在「資料總覽」頁面檢視資料，再到「模型擬合」頁面訓練模型。")

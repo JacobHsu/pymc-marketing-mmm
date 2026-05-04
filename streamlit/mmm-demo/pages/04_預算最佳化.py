@@ -11,10 +11,12 @@ import matplotlib.pyplot as plt
 
 from components.matplotlib_config import configure_matplotlib_fonts
 from pymc_marketing.mmm.multidimensional import MultiDimensionalBudgetOptimizerWrapper
+from components.progress import render_sidebar_progress
 
 configure_matplotlib_fonts()
 
 st.set_page_config(page_title="預算最佳化", page_icon="💰", layout="wide")
+render_sidebar_progress()
 
 st.title("💰 預算最佳化")
 st.markdown("輸入你的總廣告預算，模型會幫你找出讓銷售最大化的頻道分配方案。")
@@ -170,7 +172,7 @@ if "budget_result" in st.session_state:
         ax.bar_label(bars2, labels=[f"{v:.3f}" for v in optimal_vals], padding=3, fontsize=9)
 
         ax.set_xticks(x)
-        ax.set_xticklabels(channel_cols)
+        ax.set_xticklabels(channel_cols, rotation=30, ha="right")
         ax.set(title="預算配置比較", ylabel="花費（標準化）")
         ax.legend()
         fig.tight_layout()

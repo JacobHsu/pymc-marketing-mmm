@@ -15,10 +15,12 @@ from components.charts import (
     plot_waterfall,
 )
 from components.ai_analysis import analyze_roas_with_llm
+from components.progress import render_sidebar_progress
 
 configure_matplotlib_fonts()
 
 st.set_page_config(page_title="頻道貢獻", page_icon="📊", layout="wide")
+render_sidebar_progress()
 
 st.title("📊 頻道貢獻分析")
 st.markdown("了解各廣告頻道對銷售的貢獻，以及廣告花費回報率（ROAS）。")
@@ -47,7 +49,10 @@ with st.expander("💡 ROAS 是什麼？"):
 **注意**：這裡的 ROAS 是「模型估計的 ROAS」，含有不確定性（貝葉斯後驗）。
     """)
 
-roas_df = get_channel_roas(mmm, data)
+if "roas_df" not in st.session_state:
+    with st.spinner("計算各頻道 ROAS..."):
+        st.session_state["roas_df"] = get_channel_roas(mmm, data)
+roas_df = st.session_state["roas_df"]
 
 metric_cols = st.columns(len(channel_cols))
 for i, (_, row) in enumerate(roas_df.iterrows()):
@@ -64,8 +69,10 @@ st.divider()
 st.subheader("ROAS 比較")
 col1, col2 = st.columns([2, 1])
 with col1:
-    fig_roas = plot_roas_bar(roas_df)
-    st.pyplot(fig_roas)
+    if "fig_roas" not in st.session_state:
+        with st.spinner("繪製 ROAS 圖..."):
+            st.session_state["fig_roas"] = plot_roas_bar(roas_df)
+    st.pyplot(st.session_state["fig_roas"])
 with col2:
     st.markdown("**各頻道詳細數據**")
     display_df = roas_df.copy()
@@ -85,20 +92,26 @@ with st.expander("💡 怎麼看這張圖？"):
 - 觀察貢獻是否和廣告花費節奏一致（考慮 Adstock 延遲）
     """)
 
-fig_time = plot_channel_contribution_over_time(mmm)
-st.pyplot(fig_time)
+if "fig_contrib_time" not in st.session_state:
+    with st.spinner("繪製貢獻時間序列..."):
+        st.session_state["fig_contrib_time"] = plot_channel_contribution_over_time(mmm)
+st.pyplot(st.session_state["fig_contrib_time"])
 
 # ── AI ROAS 分析 ───────────────────────────────────────────────────────────
-with st.expander("🤖 AI 行銷洞察（NVIDIA NIM 免費 API）", expanded=False):
+with st.expander("🤖 AI 行銷洞察", expanded=False):
     st.markdown("AI 直接讀取 ROAS 數據，給出預算分配建議。不需要圖片辨識，分析更精準。")
 
-    nvidia_key = st.text_input(
-        "NVIDIA API Key",
-        value=os.environ.get("NVIDIA_API_KEY", ""),
-        type="password",
-        placeholder="nvapi-...",
-        help="從 https://build.nvidia.com → API Keys 取得免費金鑰。",
-    )
+    _env_key = os.environ.get("NVIDIA_API_KEY", "")
+    if _env_key:
+        st.caption("✓ API Key 已從環境變數載入")
+        nvidia_key = _env_key
+    else:
+        nvidia_key = st.text_input(
+            "NVIDIA API Key",
+            type="password",
+            placeholder="nvapi-...",
+            help="從 https://build.nvidia.com → API Keys 取得免費金鑰。",
+        )
 
     if st.button("🔍 開始 AI 分析", type="primary"):
         if not nvidia_key.strip():
@@ -134,8 +147,10 @@ with st.expander("💡 瀑布圖說明"):
     """)
 
 try:
-    fig_wf = plot_waterfall(mmm)
-    st.pyplot(fig_wf)
+    if "fig_waterfall" not in st.session_state:
+        with st.spinner("繪製瀑布圖..."):
+            st.session_state["fig_waterfall"] = plot_waterfall(mmm)
+    st.pyplot(st.session_state["fig_waterfall"])
 except Exception as e:
     st.warning(f"瀑布圖暫時無法顯示：{e}")
 
@@ -144,9 +159,13 @@ st.divider()
 # ── 頻道貢獻佔比 ──────────────────────────────────────────────────────────
 st.subheader("各頻道貢獻佔比")
 try:
-    result_share = mmm.plot.channel_contribution_share_hdi(figsize=(10, 4))
-    fig_share = result_share[0] if isinstance(result_share, tuple) else result_share
-    st.pyplot(fig_share)
+    if "fig_contrib_share" not in st.session_state:
+        with st.spinner("繪製貢獻佔比圖..."):
+            result_share = mmm.plot.channel_contribution_share_hdi(figsize=(10, 4))
+            st.session_state["fig_contrib_share"] = (
+                result_share[0] if isinstance(result_share, tuple) else result_share
+            )
+    st.pyplot(st.session_state["fig_contrib_share"])
 except Exception as e:
     st.warning(f"貢獻佔比圖暫時無法顯示：{e}")
 
