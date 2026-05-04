@@ -114,15 +114,24 @@
 
 ## 評比紀錄
 
-<!-- 格式：
-### skill-name
-- **來源**：內建 / superpowers / gstack / 專案本地
-- **任務**：做了什麼
-- **呼叫方式**：/skill-name 或 Skill tool
-- **效果**：實際產出描述
-- **優點**：
-- **限制**：
-- **評分**：效果 ⭐x / 省時 ⭐x
-- **適合場景**：
-- **驗證日期**：
--->
+### refactor-clean
+- **來源**：內建
+- **任務**：整理 `ai_analysis.py`，移除死碼、抽取重複邏輯
+- **呼叫方式**：Skill tool
+- **效果**：產出結構化的死碼分類表（SAFE/CAUTION/DANGER），指引刪除 `channel_cols` 死碼與抽出 `_make_client`、`_compute_fit_metrics` 兩個 helper；函數從最長 68 行縮短至 < 50 行
+- **優點**：提供清晰的安全分級流程，避免盲目刪除；Step 5 的「整合重複」指引對抽 helper 很有效
+- **限制**：以死碼偵測為主軸，無法直接要求「加 error handling」或「改型別標注」；vulture 對跨檔呼叫誤報 60% 信心，需人工確認
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：清理已有一段時間的模組、移除廢棄參數、整合重複的初始化邏輯
+- **驗證日期**：2026-05-04
+
+### python-review
+- **來源**：內建
+- **任務**：審查 `refactor-clean` 完成後的 `ai_analysis.py`
+- **呼叫方式**：Skill tool → python-reviewer agent
+- **效果**：發現 2 HIGH（`_make_client` 缺回傳型別、`mmm` 參數無型別）、4 MEDIUM（行長、chr(10) workaround、client 未快取、缺 error handling）；均有具體修法
+- **優點**：分級明確（CRITICAL/HIGH/MEDIUM），每條有 before/after 範例；mypy 整合讓型別問題無法漏網
+- **限制**：不自動修正，只報告；MEDIUM 中的「client 未快取」在 Streamlit 場景不是實際問題（每次渲染一次），略有過度警示
+- **評分**：效果 ⭐⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：任何 Python 改動後的驗收，特別是有 type hint 要求的場景
+- **驗證日期**：2026-05-04

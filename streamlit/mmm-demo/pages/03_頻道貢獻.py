@@ -121,7 +121,6 @@ with st.expander("🤖 AI 行銷洞察", expanded=False):
                 try:
                     analysis = analyze_roas_with_llm(
                         roas_df=roas_df,
-                        channel_cols=channel_cols,
                         api_key=nvidia_key.strip(),
                     )
                     st.session_state["chart_analysis"] = analysis

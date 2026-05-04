@@ -1,3 +1,6 @@
+# Refact IDE
+.refact/
+
 # MLflow logging
 mlruns/
 mlruns.db

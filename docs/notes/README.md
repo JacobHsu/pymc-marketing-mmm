@@ -8,8 +8,8 @@
 
 | # | 任務 | 狀態 |
 |---|------|------|
-| 0 | [確認起點](tasks/00-baseline.md) | 待開始 |
-| 1 | [重構 ai_analysis.py](tasks/01-refactor-ai-analysis.md) | 待開始 |
+| 0 | [確認起點](tasks/00-baseline.md) | 完成 |
+| 1 | [重構 ai_analysis.py](tasks/01-refactor-ai-analysis.md) | 完成 |
 | 2 | [安全掃描](tasks/02-security-scan.md) | 待開始 |
 | 3 | [單元測試](tasks/03-unit-tests.md) | 待開始 |
 | 4 | [UI 審查](tasks/04-ui-review.md) | 待開始 |
