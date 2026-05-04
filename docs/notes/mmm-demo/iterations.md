@@ -112,3 +112,30 @@
 - Windows 環境下 `conda run` 有 cp950 編碼問題，需直接呼叫 conda env 的 Python 可執行檔
 - 整體覆蓋率 71% 而非 80%，原因是 `build_mmm`、`fit_mmm`、`sample_posterior_predictive` 需要真實 MCMC 採樣，無法 mock；testable 函數達 100%
 - HF Hub 下載路徑用 `patch("huggingface_hub.hf_hub_download")` 覆蓋，需注意 import-inside-function 的 mock 方式
+
+## Iteration 4 — 2026-05-04（action-plan #4）
+
+**目標**：對 mmm-demo 5 頁 UI 進行視覺稽核，找出並修復導航與可維護性問題
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `design-review` | gstack | skill | 截圖驅動 UI 審查，發現 UX 與維護風險 |
+
+### 改動
+- `streamlit/mmm-demo/components/progress.py`：FINDING-002 — 將 CSS 鎖頁邏輯從 `li:nth-child(4/5)` 改為 `a[href*="/頻道貢獻"]`、`a[href*="/預算最佳化"]` 屬性選擇器，頁面順序調整時不再靜默鎖錯
+- `streamlit/mmm-demo/pages/03_頻道貢獻.py`：FINDING-001 — 在鎖定警告後新增 `st.page_link("pages/02_模型擬合.py", ...)`，使用者不需回側邊欄即可導航
+- `streamlit/mmm-demo/pages/04_預算最佳化.py`：同上
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 鎖定頁面警告有無導航連結 | 無（使用者卡住） | 有（st.page_link 直接連到模型擬合） |
+| CSS 鎖頁邏輯 | nth-child 位置依賴，頁面順序改動就壞 | href 屬性選擇器，穩定 |
+| 導航 UX 流程完整性 | BLOCKER：鎖定頁面無出口 | 已修復 |
+
+### 心得
+- `design-review` 截圖驅動分析比純靜態分析有效：nth-child 問題在 code review 中可能被忽略，但截圖後一眼就能確認頁面順序
+- `$B js` JavaScript 注入可讀取實際 DOM href 值，確認 Streamlit 使用未編碼中文字 href（如 `/頻道貢獻`），讓 CSS 屬性選擇器可以直接匹配
+- `st.page_link` 是 Streamlit 原生多頁導航 API，比自製 `st.markdown` 連結更正確；`st.stop()` 前插入即生效
+- Windows 環境 `$B` 截圖路徑白名單須注意：只接受 `Temp` 目錄或專案目錄

@@ -23,6 +23,7 @@ st.markdown("輸入你的總廣告預算，模型會幫你找出讓銷售最大�
 
 if "mmm" not in st.session_state:
     st.warning("⬅️ 請先到「模型擬合」頁面訓練模型。")
+    st.page_link("pages/02_模型擬合.py", label="前往模型擬合", icon="⚙️")
     st.stop()
 
 mmm = st.session_state["mmm"]

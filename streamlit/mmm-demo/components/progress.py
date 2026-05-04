@@ -41,18 +41,19 @@ def render_sidebar_progress() -> None:
     """
     st.markdown(f"<style>{rename_css}</style>", unsafe_allow_html=True)
 
-    # 注入 CSS：模型未完成時，鎖定第 4、5 個導覽項目
+    # 注入 CSS：模型未完成時，鎖定「頻道貢獻」和「預算最佳化」頁面連結。
+    # 使用 href 屬性選擇器（而非 nth-child），頁面順序改變時仍正確作用。
     if not has_model:
         locked_css = """
-        [data-testid="stSidebarNav"] ul li:nth-child(4) a,
-        [data-testid="stSidebarNav"] ul li:nth-child(5) a {
+        [data-testid="stSidebarNav"] ul li a[href*="/頻道貢獻"],
+        [data-testid="stSidebarNav"] ul li a[href*="/預算最佳化"] {
             pointer-events: none !important;
             opacity: 0.35 !important;
             cursor: not-allowed !important;
             color: #999 !important;
         }
-        [data-testid="stSidebarNav"] ul li:nth-child(4) a::after,
-        [data-testid="stSidebarNav"] ul li:nth-child(5) a::after {
+        [data-testid="stSidebarNav"] ul li a[href*="/頻道貢獻"]::after,
+        [data-testid="stSidebarNav"] ul li a[href*="/預算最佳化"]::after {
             content: " 🔒";
             font-size: 0.75em;
             color: #aaa;

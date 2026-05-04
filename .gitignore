@@ -165,3 +165,4 @@ sandbox/
 
 .cursor/plans
 automatic_translation.py
+.gstack/

@@ -27,6 +27,7 @@ st.markdown("了解各廣告頻道對銷售的貢獻，以及廣告花費回報�
 
 if "mmm" not in st.session_state:
     st.warning("⬅️ 請先到「模型擬合」頁面訓練模型。")
+    st.page_link("pages/02_模型擬合.py", label="前往模型擬合", icon="⚙️")
     st.stop()
 
 mmm = st.session_state["mmm"]
