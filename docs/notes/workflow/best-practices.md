@@ -6,7 +6,13 @@
 
 ## 已驗證工作流
 
-（待累積，執行各 Step 後填入）
+### 安全掃描選擇策略
+- **適用場景**：每次 commit/PR 前決定用哪個掃描工具
+- **步驟**：
+  1. 日常 commit → `security-review` skill（速度快，PR diff 導向，signal 高）
+  2. 月度 or 部署前 → `cso --diff`（14-phase 全覆蓋，OWASP+STRIDE）
+- **效果評分**：⭐⭐⭐⭐⭐
+- **發現日期**：2026-05-04
 
 <!-- 格式：
 ### 工作流名稱
@@ -24,7 +30,7 @@
 
 - [ ] `refactor-clean` → `python-review` 的順序是否比反過來更有效率？
 - [ ] gstack `review` 比內建 `python-review` 找到更多 production bug？
-- [ ] gstack `cso` 的 OWASP+STRIDE 雙框架比內建 `security-review` 覆蓋更廣？
+- [x] gstack `cso` 的 OWASP+STRIDE 雙框架比內建 `security-review` 覆蓋更廣？→ 框架更廣，但本專案結論一致，日常用 `security-review` 足夠
 - [ ] `Explore` agent 先做 baseline 分析再 refactor，是否比直接 refactor 更精準？
 - [ ] `plan` → `tdd-workflow` → `code-review` 流水線是否比直接實作收斂更快？
 - [ ] 雙 agent 並行（本地 + agency-agents 同一任務）是否比單一 agent 更準確？

@@ -135,3 +135,36 @@
 - **評分**：效果 ⭐⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：任何 Python 改動後的驗收，特別是有 type hint 要求的場景
 - **驗證日期**：2026-05-04
+
+### tdd-workflow
+- **來源**：userSettings
+- **任務**：為 `streamlit/mmm-demo/components/mmm_runner.py` 的純函數建立單元測試
+- **呼叫方式**：Skill tool
+- **效果**：產出 31 個單元測試（5 class，涵蓋 `prepare_features`、`saved_model_exists`、`ensure_model_file`、`load_sample_data`、`get_channel_roas`、`save_mmm`、`load_mmm`）；整體覆蓋率 71%，testable 函數覆蓋率 100%；HF Hub 下載路徑用 mock 覆蓋
+- **優點**：流程明確（RED→GREEN→REFACTOR）；mock 指引對 xarray idata 複雜 chain 有效；edge case 提示（zero spend、zero channel、missing dataset）很到位
+- **限制**：MCMC 函數（`build_mmm`、`fit_mmm`、`sample_posterior_predictive`）無法在不啟動 PyMC 的情況下測試，整體覆蓋率受限於此；skill 文件偏 TS/JS 框架，pytest 範例較少需自行對應
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：為純函數、資料處理管線、mock 友好的 API wrapper 建立測試；適合快速提升新模組的 test coverage
+- **驗證日期**：2026-05-04
+
+### security-review
+- **來源**：內建
+- **任務**：掃描 `streamlit/mmm-demo/` 的 API key 處理、hardcode 風險、LLM output 渲染
+- **呼叫方式**：Skill tool → 內建 security-reviewer agent
+- **效果**：自動分析 git diff，輸出結構化報告（CRITICAL/HIGH/MEDIUM），本次無高信心弱點
+- **優點**：速度快，聚焦 PR diff，signal-to-noise 極高；自動排除 false positive 類型
+- **限制**：覆蓋範圍限於 PR diff，不做全專案掃描；無 OWASP/STRIDE 框架輸出
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
+- **適合場景**：每次 PR 前快速驗收，日常 commit 安全把關
+- **驗證日期**：2026-05-04
+
+### cso（gstack）
+- **來源**：gstack
+- **任務**：對 `streamlit/mmm-demo/` 全相位安全掃描（Phase 0–14，OWASP+STRIDE）
+- **呼叫方式**：Skill tool
+- **效果**：Attack surface census、git history 掃描、LLM security、OWASP Top 10、STRIDE，本次無高信心弱點；與 `security-review` 結論一致
+- **優點**：覆蓋最廣（14 phases），STRIDE 威脅模型對架構設計階段有參考價值；`--diff` 模式可對齊 PR workflow
+- **限制**：preamble script 須 bash 環境，在 Windows PowerShell 需手動跳過部分步驟；對純本地 Streamlit 專案 CI/CD phase 輸出空白，略顯冗餘
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐（較慢）
+- **適合場景**：月度深度掃描、架構設計審查、部署前驗收
+- **驗證日期**：2026-05-04

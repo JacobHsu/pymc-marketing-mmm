@@ -53,3 +53,62 @@
 - `refactor-clean` + `python-review` 串接效果好：前者指引結構清理，後者補抓型別漏洞
 - vulture 的 60% 信心誤報需要人工用 grep 確認，不能盲目信任
 - `python-review` 的 MEDIUM「client 未快取」在 Streamlit 場景不算真問題（每次渲染一次 API call），需依情境判斷
+
+## Iteration 2 — 2026-05-04（action-plan #2）
+
+**目標**：驗證 `security-review` vs `cso` 安全掃描覆蓋差異，確認 `mmm-demo` 無明顯安全問題
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `security-review` | 內建 | skill → agent | PR diff 導向安全掃描 |
+| `cso` | gstack | skill | 全相位安全掃描（14 phases，OWASP+STRIDE） |
+
+### 改動
+- 無程式碼改動（純掃描任務）
+- `docs/notes/tools/skills-eval.md`：新增 `security-review`、`cso` 評比紀錄
+- `docs/notes/workflow/best-practices.md`：新增日常安全掃描工作流決策
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| Hardcode API key | 未確認 | 已確認無 |
+| .env 保護 | 未確認 | 已確認 gitignored |
+| git history 洩漏 | 未確認 | 已確認無 |
+| LLM output XSS | 未確認 | 已確認無（st.markdown 預設安全） |
+
+### 心得
+- 兩工具結論完全一致：無高信心弱點
+- `security-review`（PR diff 導向）速度更快，日常使用足夠
+- `cso` 的 14-phase 框架對純本地 Streamlit 有點過重，但 STRIDE 威脅模型在架構規劃時有參考價值
+- **決策**：日常用 `security-review`；每月或部署前用 `cso --diff`
+
+## Iteration 3 — 2026-05-04（action-plan #3）
+
+**目標**：為 `mmm_runner.py` 的純函數建立單元測試，目標覆蓋率 80%+
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `tdd-workflow` | userSettings | skill | 指引 RED→GREEN→REFACTOR 流程 |
+| `python-reviewer` agent | 內建 | agent | 確認 test 寫法與 mock 策略 |
+
+### 改動
+- 新增 `streamlit/mmm-demo/tests/__init__.py`（空檔，讓 pytest 識別 package）
+- 新增 `streamlit/mmm-demo/tests/conftest.py`（加入 mmm-demo 根目錄至 sys.path）
+- 新增 `streamlit/mmm-demo/tests/test_mmm_runner.py`（31 個測試，7 個 TestClass）
+- 安裝 `pytest`、`pytest-cov` 至 conda env `pymc-marketing-dev`
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 單元測試數量 | 0 | 31（全部通過） |
+| `mmm_runner.py` 覆蓋率 | 0% | 71% |
+| testable 函數覆蓋率 | 0% | 100% |
+| MCMC 函數（刻意排除） | — | 0%（需真實 PyMC 採樣，已於 docstring 標注） |
+
+### 心得
+- `tdd-workflow` 對 mock 策略指引有效：`MagicMock` 搭配 `sel_side_effect` 正確模擬 xarray idata chain
+- Windows 環境下 `conda run` 有 cp950 編碼問題，需直接呼叫 conda env 的 Python 可執行檔
+- 整體覆蓋率 71% 而非 80%，原因是 `build_mmm`、`fit_mmm`、`sample_posterior_predictive` 需要真實 MCMC 採樣，無法 mock；testable 函數達 100%
+- HF Hub 下載路徑用 `patch("huggingface_hub.hf_hub_download")` 覆蓋，需注意 import-inside-function 的 mock 方式
