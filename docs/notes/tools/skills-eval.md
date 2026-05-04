@@ -15,7 +15,8 @@
 
 | 來源 | GitHub | 說明 |
 |------|--------|------|
-| **內建** | — | Claude Code 全局內建（`~/.claude/.agents/skills/`） |
+| **everything-claude-code** | [affaan-m/everything-claude-code](https://github.com/affaan-m/everything-claude-code) | 透過 Plugin 安裝至 `~/.claude/skills/` |
+| **Claude Code 原生** | — | 路徑前綴 `builtin:`，不在 `~/.claude/skills/` 目錄下（如 `security-review`） |
 | **superpowers** | [claude-plugins-official](https://github.com/anthropics/claude-plugins) | Anthropic 官方插件 v5.0.7 |
 | **gstack** | [garrytan/gstack](https://github.com/garrytan/gstack) | Garry Tan（YC CEO）23 個角色化工具，88.7K stars |
 | **agency-agents** | [msitarzewski/agency-agents](https://github.com/msitarzewski/agency-agents) | 144+ 角色化工具，**全部為 agents**，透過 Agent tool 呼叫，不在本表列出 → 見 [agents-eval.md](agents-eval.md) |
@@ -42,8 +43,8 @@
 
 | Skill | 來源 | 用途 | 優先度 | 狀態 |
 |-------|------|------|--------|------|
-| `python-patterns` | 內建 | Python 最佳實踐、型別標注 | 🔴 高 | 候選 |
-| `python-review` | 內建 | 深度 code review | 🔴 高 | 候選 |
+| `python-patterns` | everything-claude-code | Python 最佳實踐、型別標注 | 🔴 高 | 候選 |
+| `python-review` | everything-claude-code | 深度 code review | 🔴 高 | 候選 |
 | `review` | gstack | Staff Engineer 角色，抓 production bug，可自動修 | 🔴 高 | 候選 |
 | `code-best-practice` | 專案本地 | PyMC-Marketing 程式風格與慣例 | 🔴 高 | 候選 |
 
@@ -51,23 +52,23 @@
 
 | Skill | 來源 | 用途 | 優先度 | 狀態 |
 |-------|------|------|--------|------|
-| `refactor-clean` | 內建 | 清除死碼、統一結構 | 🔴 高 | 候選 |
+| `refactor-clean` | everything-claude-code | 清除死碼、統一結構 | 🔴 高 | 候選 |
 
 ### 測試
 
 | Skill | 來源 | 用途 | 優先度 | 狀態 |
 |-------|------|------|--------|------|
-| `python-testing` | 內建 | pytest 策略、coverage 達標 | 🔴 高 | 候選 |
-| `tdd-workflow` | 內建 | 測試先行流程 | 🔴 高 | 候選 |
+| `python-testing` | everything-claude-code | pytest 策略、coverage 達標 | 🔴 高 | 候選 |
+| `tdd-workflow` | everything-claude-code | 測試先行流程 | 🔴 高 | 候選 |
 | `superpowers:test-driven-development` | superpowers | TDD 完整工作流 | 🔴 高 | 候選 |
-| `e2e-testing` | 內建 | 關鍵用戶流程驗證 | 🟡 中 | 候選 |
+| `e2e-testing` | everything-claude-code | 關鍵用戶流程驗證 | 🟡 中 | 候選 |
 | `qa` | gstack | QA Lead 角色，瀏覽器測試 + bug 修復 + 回歸測試 | 🟡 中 | 候選 |
 
 ### 安全
 
 | Skill | 來源 | 用途 | 優先度 | 狀態 |
 |-------|------|------|--------|------|
-| `security-review` | 內建 | 掃描 API key 洩漏、注入風險 | 🔴 高 | 候選 |
+| `security-review` | Claude Code 原生 | 掃描 API key 洩漏、注入風險 | 🔴 高 | 候選 |
 | `cso` | gstack | Chief Security Officer，OWASP Top 10 + STRIDE | 🟡 中 | 候選 |
 
 ### UI/UX
@@ -101,7 +102,7 @@
 | Skill | 來源 | 用途 | 優先度 | 狀態 |
 |-------|------|------|--------|------|
 | `benchmark` | gstack | 頁面載入、Core Web Vitals 基準 | 🟢 低 | 候選 |
-| `update-docs` | 內建 | 自動更新 README、文件 | 🟡 中 | 候選 |
+| `update-docs` | everything-claude-code | 自動更新 README、文件 | 🟡 中 | 候選 |
 | `document-release` | gstack | Technical Writer，ship 後自動更新所有文件 | 🟡 中 | 候選 |
 
 ### MMM 領域
@@ -115,7 +116,7 @@
 ## 評比紀錄
 
 ### refactor-clean
-- **來源**：內建
+- **來源**：everything-claude-code
 - **任務**：整理 `ai_analysis.py`，移除死碼、抽取重複邏輯
 - **呼叫方式**：Skill tool
 - **效果**：產出結構化的死碼分類表（SAFE/CAUTION/DANGER），指引刪除 `channel_cols` 死碼與抽出 `_make_client`、`_compute_fit_metrics` 兩個 helper；函數從最長 68 行縮短至 < 50 行
@@ -126,7 +127,7 @@
 - **驗證日期**：2026-05-04
 
 ### python-review
-- **來源**：內建
+- **來源**：everything-claude-code
 - **任務**：審查 `refactor-clean` 完成後的 `ai_analysis.py`
 - **呼叫方式**：Skill tool → python-reviewer agent
 - **效果**：發現 2 HIGH（`_make_client` 缺回傳型別、`mmm` 參數無型別）、4 MEDIUM（行長、chr(10) workaround、client 未快取、缺 error handling）；均有具體修法
@@ -137,7 +138,7 @@
 - **驗證日期**：2026-05-04
 
 ### tdd-workflow
-- **來源**：userSettings
+- **來源**：everything-claude-code
 - **任務**：為 `streamlit/mmm-demo/components/mmm_runner.py` 的純函數建立單元測試
 - **呼叫方式**：Skill tool
 - **效果**：產出 31 個單元測試（5 class，涵蓋 `prepare_features`、`saved_model_exists`、`ensure_model_file`、`load_sample_data`、`get_channel_roas`、`save_mmm`、`load_mmm`）；整體覆蓋率 71%，testable 函數覆蓋率 100%；HF Hub 下載路徑用 mock 覆蓋
@@ -148,7 +149,7 @@
 - **驗證日期**：2026-05-04
 
 ### security-review
-- **來源**：內建
+- **來源**：Claude Code 原生
 - **任務**：掃描 `streamlit/mmm-demo/` 的 API key 處理、hardcode 風險、LLM output 渲染
 - **呼叫方式**：Skill tool → 內建 security-reviewer agent
 - **效果**：自動分析 git diff，輸出結構化報告（CRITICAL/HIGH/MEDIUM），本次無高信心弱點
@@ -158,7 +159,7 @@
 - **適合場景**：每次 PR 前快速驗收，日常 commit 安全把關
 - **驗證日期**：2026-05-04
 
-### cso（gstack）
+### cso
 - **來源**：gstack
 - **任務**：對 `streamlit/mmm-demo/` 全相位安全掃描（Phase 0–14，OWASP+STRIDE）
 - **呼叫方式**：Skill tool

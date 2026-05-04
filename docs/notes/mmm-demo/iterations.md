@@ -34,8 +34,8 @@
 ### 使用工具
 | 工具 | 來源 | 類型 | 用途 |
 |------|------|------|------|
-| `refactor-clean` | 內建 | skill | 死碼偵測（vulture）、分類、抽 helper |
-| `python-review` | 內建 | skill → agent | 型別標注、風格、安全審查 |
+| `refactor-clean` | everything-claude-code | skill | 死碼偵測（vulture）、分類、抽 helper |
+| `python-review` | everything-claude-code | skill → agent | 型別標注、風格、安全審查 |
 
 ### 改動
 - `components/ai_analysis.py`：移除死碼 `channel_cols` 參數；抽出 `_make_client()`、`_compute_fit_metrics()` helper；函數長度從最長 68 行降至 < 50 行；補齊 `_make_client` 回傳型別與 `mmm` 參數型別；修正 `chr(10)` 為 `_NL` 常數
@@ -61,7 +61,7 @@
 ### 使用工具
 | 工具 | 來源 | 類型 | 用途 |
 |------|------|------|------|
-| `security-review` | 內建 | skill → agent | PR diff 導向安全掃描 |
+| `security-review` | Claude Code 原生 | skill → agent | PR diff 導向安全掃描 |
 | `cso` | gstack | skill | 全相位安全掃描（14 phases，OWASP+STRIDE） |
 
 ### 改動
@@ -90,8 +90,8 @@
 ### 使用工具
 | 工具 | 來源 | 類型 | 用途 |
 |------|------|------|------|
-| `tdd-workflow` | userSettings | skill | 指引 RED→GREEN→REFACTOR 流程 |
-| `python-reviewer` agent | 內建 | agent | 確認 test 寫法與 mock 策略 |
+| `tdd-workflow` | everything-claude-code | skill | 指引 RED→GREEN→REFACTOR 流程 |
+| `python-reviewer` agent | everything-claude-code | agent | 確認 test 寫法與 mock 策略 |
 
 ### 改動
 - 新增 `streamlit/mmm-demo/tests/__init__.py`（空檔，讓 pytest 識別 package）
@@ -139,3 +139,30 @@
 - `$B js` JavaScript 注入可讀取實際 DOM href 值，確認 Streamlit 使用未編碼中文字 href（如 `/頻道貢獻`），讓 CSS 屬性選擇器可以直接匹配
 - `st.page_link` 是 Streamlit 原生多頁導航 API，比自製 `st.markdown` 連結更正確；`st.stop()` 前插入即生效
 - Windows 環境 `$B` 截圖路徑白名單須注意：只接受 `Temp` 目錄或專案目錄
+
+## Iteration 5 — 2026-05-04（action-plan #5）
+
+**目標**：為 mmm-demo 4 個核心頁面流程建立 E2E 測試，覆蓋導航、鎖定行為、CSS 驗證
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `e2e-runner` | Claude Code 內建 | agent | 撰寫並執行 Playwright E2E 測試 |
+
+### 改動
+- 新增 `streamlit/mmm-demo/tests/e2e/__init__.py`（空檔）
+- 新增 `streamlit/mmm-demo/tests/e2e/test_navigation.py`（15 個測試，5 個 TestClass）
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| E2E 測試數量 | 0 | 15（全部 PASSED） |
+| 覆蓋頁面 | 0 | 5（首頁、資料總覽、模型擬合、頻道貢獻鎖定、預算最佳化鎖定） |
+| CSS lock 驗證 | 無 | 有（getComputedStyle 確認 pointer-events: none） |
+| FINDING-001 回歸保護 | 無 | 有（test_goto_model_fitting_link_visible） |
+
+### 心得
+- `e2e-runner` 全程自主：產出測試、執行、修復 strict-mode 錯誤、回報結果，無需人工介入
+- Streamlit React SPA 需要 `networkidle` + 額外 wait 才能正確截圖，headless Chrome `--screenshot` 旗標太早截圖；應直接用 Playwright API
+- `pytest-cov` 對 browser-driven 測試回報 exit code 1 屬誤報，需在 pytest 設定排除或忽略
+- MCMC 流程（模型擬合後的完整功能頁）是自動化 E2E 的天花板，需要另外設計 fixture（pre-fitted .nc 檔）才能解鎖
