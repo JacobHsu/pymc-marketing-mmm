@@ -1,6 +1,6 @@
-# Task 06：部署設定
+# Task 07：部署設定
 
-**對應 action-plan**：#6  
+**對應 action-plan**：#7  
 **工具**：`setup-deploy` skill（gstack）→ `ship` skill（gstack）
 
 ---
@@ -12,7 +12,7 @@
 目標：可一鍵啟動，非本地手動。
 完成後用 ship skill 驗證流程可跑通。
 將工具效果填入 docs/notes/tools/skills-eval.md 評比紀錄。
-將本次改動填入 docs/notes/mmm-demo/iterations.md Iteration 6（對應 action-plan #6）。
+將本次改動填入 docs/notes/mmm-demo/iterations.md Iteration 7（對應 action-plan #7）。
 ```
 
 ---
@@ -21,9 +21,8 @@
 
 - [ ] 可用單一指令從零啟動
 - [ ] skills-eval.md 有填入評比紀錄
-- [ ] iterations.md Iteration 6 有填入
+- [ ] iterations.md Iteration 7 有填入
 
 ## 完成後
 
-→ 更新 [best-practices.md](../workflow/best-practices.md) 填入完整部署工作流  
-→ 所有 task 完成，整理 [workflow/best-practices.md](../workflow/best-practices.md) 做最終總結
+→ 前往 [Task 08](08-benchmark.md)

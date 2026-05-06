@@ -14,8 +14,9 @@
 | 3 | [單元測試](tasks/03-unit-tests.md) | 完成 |
 | 4 | [UI 審查](tasks/04-ui-review.md) | 完成 |
 | 4b | [UI 風格重做](tasks/04b-design-shotgun.md) | 完成 |
-| 5 | [E2E 測試](tasks/05-e2e-tests.md) | 完成 |
-| 6 | [部署設定](tasks/06-deploy.md) | 完成 |
+| 5 | [真瀏覽器 QA](tasks/05-qa.md) | 進行中 |
+| 6 | [E2E 測試](tasks/06-e2e-tests.md) | 完成 |
+| 7 | [部署設定](tasks/07-deploy.md) | 完成 |
 
 ---
 
