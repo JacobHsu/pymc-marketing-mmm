@@ -191,6 +191,34 @@
 - `run.ps1` 用 `$MyInvocation.MyCommand.Path` 取得腳本位置再 `Set-Location`，讓腳本從 repo 根目錄或 `streamlit/mmm-demo/` 執行結果相同
 - Streamlit Cloud 部署說明已在 README 的「雲端部署」章節，不需額外文件
 
+## Iteration 5 — 2026-05-07（action-plan #5）
+
+**目標**：對 mmm-demo 5 頁 UI 進行真瀏覽器 QA，驗收 04b 設計重做後的 Material Icons 顯示與導航正確性
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `qa` | gstack | skill | 真瀏覽器截圖、console 錯誤檢查、導航驗收 |
+
+### 改動
+- 無程式碼改動（純 QA 驗收，無 bug 需修復）
+- 新增 `.gstack/qa-reports/screenshots/`：5 頁截圖（01-home、02-data-overview、03-model-fit、04-channel-contrib、05-budget-opt）
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 04b UI 視覺驗收 | 無截圖佐證 | 5 頁截圖完整 |
+| Material Icons 渲染確認 | 未驗證 | 全 5 個 icon 確認正確 |
+| 導航連結（FINDING-001 回歸） | 未驗證 | 確認兩個鎖定頁均有「前往模型擬合」連結 |
+| Console JS 錯誤 | 未知 | 無 uncaught exception（Streamlit 內建 404 屬已知行為） |
+| 健康分數 | — | 95/100 |
+
+### 心得
+- `$B goto` 直接導航 Streamlit 子頁面後需等 3 秒，頁面才能完整渲染（React SPA 初始化時間）
+- `$B snapshot -i -a` 在 Streamlit 多元素頁面觸發「matched multiple elements」，改用 `$B screenshot` 即可
+- 404 錯誤（`/_stcore/health`、`/_stcore/host-config`）是 Streamlit 多頁 app 的已知行為：直接 `goto` 子頁面時，Streamlit 內部 fetch 會把頁面路徑拼入 URL，屬 Streamlit 框架問題，非我們程式碼的問題
+- `$B js window.performance.getEntriesByType('resource')` 可精確定位 404 資源名稱，比肉眼看 console log 更快
+
 ## Iteration 4b — 2026-05-06（action-plan #4b）
 
 **目標**：將 mmm-demo UI 從 emoji 風格升級為 Material Icons + C-style 企業設計，提升報告質感

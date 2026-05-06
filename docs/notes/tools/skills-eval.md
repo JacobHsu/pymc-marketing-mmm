@@ -212,3 +212,14 @@
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：UI 整體風格升級；從 prototype emoji 風格升至企業匯報品質；需要設計系統一致性的多頁 Streamlit 應用
 - **驗證日期**：2026-05-06
+
+### qa（gstack）
+- **來源**：gstack
+- **任務**：對 mmm-demo 5 頁 Streamlit UI 進行真瀏覽器 QA，驗收 04b 設計重做後的 Material Icons 顯示、版型與導航正確性
+- **呼叫方式**：Skill tool → `$B` browse binary（Chromium headless）
+- **效果**：全 5 頁截圖完整；Material Icons（analytics、table_chart、model_training、stacked_bar_chart、savings）全部正確渲染；鎖定頁「前往模型擬合」導航連結確認存在；無 uncaught JS exception；健康分數 95/100
+- **優點**：真瀏覽器渲染，能確認字型 ligature（Material Symbols Rounded）實際顯示；截圖可直接作為驗收佐證；`$B js` 可查 performance entries 精確定位 404 資源來源
+- **限制**：Streamlit SPA 直接 `goto` 子頁面後需等待 3 秒才能截到有內容的畫面（頁面初始化時間）；`snapshot -i -a` 在 Streamlit 多元素頁面觸發「matched multiple elements」錯誤，需改用 `screenshot`；MCMC 後的完整頁面（頻道貢獻、預算最佳化有資料狀態）無法在無模型下測試
+- **評分**：效果 ⭐⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：UI 改動後的視覺驗收；多頁 Streamlit app 的跨頁導航與 icon 渲染確認；設計迭代後的快速回歸截圖
+- **驗證日期**：2026-05-07
