@@ -166,3 +166,27 @@
 - Streamlit React SPA 需要 `networkidle` + 額外 wait 才能正確截圖，headless Chrome `--screenshot` 旗標太早截圖；應直接用 Playwright API
 - `pytest-cov` 對 browser-driven 測試回報 exit code 1 屬誤報，需在 pytest 設定排除或忽略
 - MCMC 流程（模型擬合後的完整功能頁）是自動化 E2E 的天花板，需要另外設計 fixture（pre-fitted .nc 檔）才能解鎖
+
+## Iteration 6 — 2026-05-06（action-plan #6）
+
+**目標**：讓 mmm-demo 可用單一指令從零本機啟動，不再需要手動輸入三行指令
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `setup-deploy` | gstack | skill | 原意為雲端部署設定，本次確認 app 已部署，改為建立本機啟動腳本 |
+
+### 改動
+- 新增 `streamlit/mmm-demo/run.ps1`：一鍵 activate 環境並啟動 Streamlit
+- 更新 `streamlit/mmm-demo/README.zh-TW.md`：快速啟動改為 `.\run.ps1` 單行指令
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 本機啟動步驟數 | 3 行（conda activate + cd + streamlit run） | 1 行（`.\run.ps1`） |
+| 啟動文件說明 | 三行分開指令 | 單一腳本，任意目錄可執行 |
+
+### 心得
+- `setup-deploy` skill 預設導向雲端部署設定，對「已部署」的專案不直接適用；task 目標是本機啟動自動化，方向不同
+- `run.ps1` 用 `$MyInvocation.MyCommand.Path` 取得腳本位置再 `Set-Location`，讓腳本從 repo 根目錄或 `streamlit/mmm-demo/` 執行結果相同
+- Streamlit Cloud 部署說明已在 README 的「雲端部署」章節，不需額外文件

@@ -91,7 +91,7 @@
 ## 評比紀錄
 
 ### e2e-runner
-- **來源**：Claude Code 內建（subagent_type）
+- **來源**：everything-claude-code
 - **任務**：為 `streamlit/mmm-demo` 5 頁 Streamlit app 撰寫並執行 Playwright E2E 測試，覆蓋導航、鎖定頁面行為、CSS 注入驗證
 - **呼叫方式**：`Agent(subagent_type="e2e-runner", ...)`
 - **效果**：自行產出 `tests/e2e/test_navigation.py`（15 個測試，5 個 TestClass），全部 PASSED；覆蓋首頁載入、資料總覽、模型擬合、頻道貢獻鎖定警告、預算最佳化鎖定警告、CSS pointer-events 驗證；執行時間約 103 秒

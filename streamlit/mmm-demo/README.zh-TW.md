@@ -8,13 +8,19 @@
 
 ## 快速啟動
 
-> 環境已建好的情況下，每次啟動只需以下三行。
+> 環境已建好的情況下，一行指令啟動：
 
 ```powershell
-conda activate pymc-marketing-dev
-cd streamlit/mmm-demo
-streamlit run app.py
+.\streamlit\mmm-demo\run.ps1
 ```
+
+或在 `streamlit/mmm-demo/` 目錄下直接執行：
+
+```powershell
+.\run.ps1
+```
+
+瀏覽器自動開啟 `http://localhost:8501`。停止服務按 `Ctrl + C`。
 
 瀏覽器自動開啟 `http://localhost:8501`。停止服務按 `Ctrl + C`。
 

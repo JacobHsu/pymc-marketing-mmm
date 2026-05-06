@@ -180,4 +180,14 @@
 - **評分**：效果 ⭐⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：UI 改動後的視覺驗收；新頁面上線前的 UX 問題排查；Streamlit 多頁應用的導航流程審查
 - **驗證日期**：2026-05-04
-- **驗證日期**：2026-05-04
+
+### setup-deploy（gstack）
+- **來源**：gstack
+- **任務**：為 mmm-demo Streamlit Cloud 部署設定生命週期，寫入 CLAUDE.md 讓 `/land-and-deploy` 可讀取
+- **呼叫方式**：Skill tool
+- **效果**：引導確認平台（Streamlit Cloud）、production URL、部署方式（push to main 自動觸發）；health check 驗證 HTTP 303（正常）；寫入 CLAUDE.md `## Deploy Configuration` 標準格式
+- **優點**：設定存在 CLAUDE.md，所有後續 gstack skill 都能讀取；偵測流程覆蓋主流平台（fly/render/vercel/netlify/heroku/railway）；idempotent，重跑只會覆寫不會衝突
+- **限制**：本專案已有既有部署，skill 主要做設定文件化而非真正建立部署；Streamlit Cloud 無 CLI 可執行 status 查詢，只能靠 HTTP poll；升級到 gstack v1.26 時觸發 writing style migration，會多問一次偏好設定
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：新專案第一次設定部署；換平台後重新文件化；為 `/land-and-deploy` 做前置設定
+- **驗證日期**：2026-05-06
