@@ -17,6 +17,7 @@
 | 5 | [真瀏覽器 QA](tasks/05-qa.md) | 完成 |
 | 6 | [E2E 測試](tasks/06-e2e-tests.md) | 完成 |
 | 7 | [部署設定](tasks/07-deploy.md) | 完成 |
+| 8 | [效能基準](tasks/08-benchmark.md) | 完成 |
 
 ---
 

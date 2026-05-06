@@ -223,3 +223,15 @@
 - **評分**：效果 ⭐⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：UI 改動後的視覺驗收；多頁 Streamlit app 的跨頁導航與 icon 渲染確認；設計迭代後的快速回歸截圖
 - **驗證日期**：2026-05-07
+
+### benchmark（gstack）
+- **來源**：gstack
+- **任務**：對 mmm-demo 5 頁 Streamlit app 進行效能基準測試，建立 baseline 供後續版本比較
+- **呼叫方式**：Skill tool → `$B goto` + `$B perf`（Chromium headless）
+- **效果**：完整收集 5 頁 load time 指標；所有頁面 total load < 70ms（本機 localhost）；無任何頁面逾 200ms；baseline 儲存至 `.gstack/benchmark-reports/baselines/baseline.json`；截圖存檔佐證
+- **數據**：首頁 41ms、資料總覽 58ms、模型擬合 69ms（最慢，含 MCMC state check）、頻道貢獻 42ms、預算最佳化 43ms；平均 51ms
+- **優點**：`$B perf` 一行命令輸出 dns/tcp/ssl/ttfb/domParse/domReady/load 全維度指標；自動識別 localhost 環境（dns/tcp 均 0，ttfb 為純 Streamlit server 延遲）；結構化 JSON baseline 可供 CI 比較回歸
+- **限制**：`$B eval` 多行 JS（`JSON.stringify(...)`) 在 Windows 環境 exit code 1，無法取得 ResourceTiming entries；`$B errors` 命令不存在，console error 無法直接捕捉；本機 localhost 數據不代表生產環境（無網路延遲）
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
+- **適合場景**：UI 重構前後的效能回歸對比；建立效能基準讓 CI 可守門；找出特定頁面的慢載入根因（透過 ResourceTiming entries）
+- **驗證日期**：2026-05-07

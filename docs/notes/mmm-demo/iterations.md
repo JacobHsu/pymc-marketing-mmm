@@ -252,3 +252,40 @@
 - Material Symbols Rounded 字型由 Streamlit 本地打包（woff2），不需 CDN；字型名稱 `"Material Symbols Rounded"` 從 Streamlit bundle 確認
 - 垂直置中核心：用 `<div>` 而非 `<h1>/<h3>`（避免 heading 的 baseline 行為），icon span 加 `display:block`（消除 inline descender 空白）
 - `st.button(icon=":material/xxx:")` 和 `st.page_link(icon=":material/xxx:")` 是唯一原生支援圖示的元件，其餘必須 HTML 注入
+
+## Iteration 8 — 2026-05-07（action-plan #8）
+
+**目標**：建立 mmm-demo 5 頁效能基準（baseline），記錄 load time 供後續迭代比較
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `benchmark` | gstack | skill | 真瀏覽器效能測試、baseline JSON 建立 |
+
+### 改動
+- 新增 `.gstack/benchmark-reports/baselines/baseline.json`：5 頁效能基準數據
+- 新增 `.gstack/benchmark-reports/screenshots/benchmark-home.png`：首頁截圖佐證
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 效能基準 | 無 | 5 頁 baseline 建立（avg 51ms） |
+| 最慢頁面 | 未知 | 模型擬合 69ms（含 MCMC state check） |
+| 最快頁面 | 未知 | 首頁 41ms |
+| 所有頁面 < 200ms | 未驗證 | ✓ 確認 |
+
+### 效能數據（localhost）
+| 頁面 | total | ttfb | domReady |
+|------|-------|------|---------|
+| 首頁 | 41ms | 2ms | 41ms |
+| 資料總覽 | 58ms | 6ms | 58ms |
+| 模型擬合 | 69ms | 8ms | 69ms |
+| 頻道貢獻 | 42ms | 4ms | 42ms |
+| 預算最佳化 | 43ms | 4ms | 42ms |
+
+### 心得
+- `$B perf` 是最快取得結構化效能數據的方法，dns/tcp/ssl/ttfb/domParse/domReady/load 一次輸出
+- 模型擬合頁面（69ms）略慢於其他頁面，推測因為該頁會 check MCMC session state
+- localhost 環境 dns/tcp 均為 0ms，ttfb 即為 Streamlit Python server 的純處理時間
+- `$B eval` 多行 JS 在 Windows 環境有相容性問題（exit code 1），ResourceTiming entries 無法取得；可改用 `$B js` 語法或避開多行 JSON.stringify
+- baseline 數據只有參考意義（本機開發環境），生產環境效能需另外量測
