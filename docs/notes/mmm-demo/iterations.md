@@ -190,3 +190,37 @@
 - `setup-deploy` skill 預設導向雲端部署設定，對「已部署」的專案不直接適用；task 目標是本機啟動自動化，方向不同
 - `run.ps1` 用 `$MyInvocation.MyCommand.Path` 取得腳本位置再 `Set-Location`，讓腳本從 repo 根目錄或 `streamlit/mmm-demo/` 執行結果相同
 - Streamlit Cloud 部署說明已在 README 的「雲端部署」章節，不需額外文件
+
+## Iteration 4b — 2026-05-06（action-plan #4b）
+
+**目標**：將 mmm-demo UI 從 emoji 風格升級為 Material Icons + C-style 企業設計，提升報告質感
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `design-shotgun` | gstack | skill | 設計系統規劃 + 逐頁 icon 替換 + CSS 一致性 |
+
+### 改動
+- 新增 `streamlit/mmm-demo/components/ui_helpers.py`：`icon_title`、`icon_header`、`icon_subheader` HTML helper，用 Material Symbols Rounded 字型渲染圖示（`unsafe_allow_html`）
+- `streamlit/mmm-demo/components/progress.py`：側邊欄進度步驟圖示從 emoji（✅▶️🔒）改為符號（✓ › —），移除標題 emoji
+- `streamlit/mmm-demo/app.py`：`st.title` emoji → `icon_title("analytics", ...)`；三個 section header emoji → `icon_subheader(...)`
+- `streamlit/mmm-demo/pages/01_資料總覽.py`：`st.title` → `icon_title("table_chart", ...)`；expander/button/page_link emoji 全換為 `:material/xxx:`
+- `streamlit/mmm-demo/pages/02_模型擬合.py`：`st.title` → `icon_title("model_training", ...)`；button emoji → `:material/bolt:` / `:material/play_arrow:`
+- `streamlit/mmm-demo/pages/03_頻道貢獻.py`：`st.title` → `icon_title("stacked_bar_chart", ...)`；button/page_link emoji 全換
+- `streamlit/mmm-demo/pages/04_預算最佳化.py`：`st.title` → `icon_title("savings", ...)`；button emoji → `:material/search:`；loop 圖示從 emoji 改為 ASCII 箭頭（↑↓→）
+- 新增 `docs/install/gstack.zh-tw.md`：gstack README 完整繁體中文翻譯
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 頁面標題圖示 | emoji（📊💰⚙️） | Material Icons（svg 字型） |
+| 按鈕圖示 | emoji（🚀🔍⚡） | `:material/xxx:` 原生語法 |
+| section header 圖示 | emoji（🎯📝💡） | `icon_subheader()` HTML helper |
+| 垂直置中 | — | flex + display:block 修正對齊 |
+| 報告質感 | prototype 風格 | 企業匯報品質 |
+
+### 心得
+- Streamlit `st.title()` / `st.header()` / `st.subheader()` 不支援 `icon=` 參數，只能用 `unsafe_allow_html` 繞道
+- Material Symbols Rounded 字型由 Streamlit 本地打包（woff2），不需 CDN；字型名稱 `"Material Symbols Rounded"` 從 Streamlit bundle 確認
+- 垂直置中核心：用 `<div>` 而非 `<h1>/<h3>`（避免 heading 的 baseline 行為），icon span 加 `display:block`（消除 inline descender 空白）
+- `st.button(icon=":material/xxx:")` 和 `st.page_link(icon=":material/xxx:")` 是唯一原生支援圖示的元件，其餘必須 HTML 注入

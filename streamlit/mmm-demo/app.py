@@ -19,6 +19,7 @@ sys.path.insert(0, os.path.dirname(__file__))
 
 from components.mmm_runner import load_sample_data
 from components.progress import render_sidebar_progress
+from components.ui_helpers import icon_title, icon_subheader
 
 st.set_page_config(
     page_title="MMM 行銷組合模型 DEMO",
@@ -28,7 +29,7 @@ st.set_page_config(
 )
 
 # ── 側邊欄：資料載入 ──────────────────────────────────────────────────────
-st.sidebar.title("📊 MMM DEMO")
+st.sidebar.title("MMM DEMO")
 st.sidebar.markdown("**行銷組合模型互動展示**")
 st.sidebar.divider()
 
@@ -70,10 +71,10 @@ else:
 render_sidebar_progress()
 
 st.sidebar.divider()
-st.sidebar.caption("💡 先在「資料總覽」頁面檢視資料，再到「模型擬合」頁面訓練模型。")
+st.sidebar.caption("先在「資料總覽」頁面檢視資料，再到「模型擬合」頁面訓練模型。")
 
 # ── 主頁內容 ──────────────────────────────────────────────────────────────
-st.title("📊 MMM 行銷組合模型 互動 DEMO")
+icon_title("analytics", "MMM 行銷組合模型 互動 DEMO")
 st.markdown("> **目標**：用真實資料學習 Media Mix Modeling，理解各廣告頻道對銷售的貢獻。")
 
 st.divider()
@@ -81,7 +82,7 @@ st.divider()
 col1, col2, col3 = st.columns(3)
 
 with col1:
-    st.markdown("### 🎯 什麼是 MMM？")
+    icon_subheader("query_stats", "什麼是 MMM？")
     st.markdown("""
 **Media Mix Modeling（行銷組合模型）** 是一種統計方法，幫助行銷人員回答：
 
@@ -94,7 +95,7 @@ PyMC-Marketing 使用**貝葉斯統計**建立 MMM，
     """)
 
 with col2:
-    st.markdown("### ⚙️ 核心概念")
+    icon_subheader("hub", "核心概念")
     st.markdown("""
 **Adstock（廣告遞延效應）**
 廣告效果不會立刻消失，會延續到未來幾週後才慢慢遞減。
@@ -110,7 +111,7 @@ with col2:
     """)
 
 with col3:
-    st.markdown("### 🗺️ 使用流程")
+    icon_subheader("route", "使用流程")
     st.markdown("""
 1. **資料總覽** → 了解資料結構和統計
 2. **模型擬合** → 訓練 MMM（需要幾分鐘）
@@ -140,6 +141,6 @@ if "data" in st.session_state:
             total_spend = data[channel_cols].sum().sum()
             st.metric("總廣告花費（標準化）", f"{total_spend:.1f}")
 
-    st.info("👈 點擊左側導覽列，前往各功能頁面。建議從「資料總覽」開始。")
+    st.info("點擊左側導覽列，前往各功能頁面。建議從「資料總覽」開始。")
 else:
-    st.warning("⬅️ 請先在左側選擇資料來源。")
+    st.warning("請先在左側選擇資料來源。")

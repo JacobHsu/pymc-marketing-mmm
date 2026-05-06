@@ -14,6 +14,7 @@ import pandas as pd
 from components.matplotlib_config import configure_matplotlib_fonts
 from components.mmm_runner import DATASETS, load_sample_data
 from components.progress import render_sidebar_progress
+from components.ui_helpers import icon_title
 from components.charts import plot_channel_overview, plot_spend_distribution, plot_spend_share_pie
 
 configure_matplotlib_fonts()
@@ -21,7 +22,7 @@ configure_matplotlib_fonts()
 st.set_page_config(page_title="資料總覽", page_icon="📈", layout="wide")
 render_sidebar_progress()
 
-st.title("📈 資料總覽")
+icon_title("table_chart", "資料總覽")
 st.markdown("了解你的資料結構：銷售趨勢、各頻道花費節奏和分布。")
 
 # ── 確保有資料（若沒有則自動載入範例）──────────────────────────────────────
@@ -36,9 +37,9 @@ if "data" not in st.session_state:
     st.session_state["dataset_name"] = dataset_name
     dropped = meta.get("_dropped_channels", [])
     if dropped:
-        st.info(f"ℹ️ 自動載入範例資料：{dataset_name}。已略過全為零的頻道：{', '.join(dropped)}。")
+        st.info(f"自動載入範例資料：{dataset_name}。已略過全為零的頻道：{', '.join(dropped)}。")
     else:
-        st.info(f"ℹ️ 自動載入範例資料：{dataset_name}。如需使用自己的資料，請回首頁上傳。")
+        st.info(f"自動載入範例資料：{dataset_name}。如需使用自己的資料，請回首頁上傳。")
 
 data = st.session_state["data"]
 channel_cols = st.session_state.get("channel_columns", ["Google Search", "DV360", "Facebook", "AMS", "TV", "VOD", "OOH", "Radio"])
@@ -63,10 +64,10 @@ with col3:
 with col4:
     st.metric("銷售標準差", f"{data[target_col].std():,.0f}")
 
-with st.expander("📋 查看原始資料前 10 列"):
+with st.expander("查看原始資料前 10 列"):
     st.dataframe(data.head(10), use_container_width=True)
 
-with st.expander("📊 描述性統計"):
+with st.expander("描述性統計"):
     st.dataframe(data[channel_cols + [target_col]].describe().round(4), use_container_width=True)
 
 st.divider()
@@ -74,7 +75,7 @@ st.divider()
 # ── 時間序列圖 ─────────────────────────────────────────────────────────────
 st.subheader("時間序列：銷售額 + 各頻道花費")
 
-with st.expander("💡 怎麼看這張圖？", expanded=False):
+with st.expander("怎麼看這張圖？", expanded=False):
     st.markdown("""
 - **黑線（銷售額）**：觀察整體趨勢、季節性波動
 - **彩色線（廣告花費）**：看廣告投放節奏是否與銷售高峰對應
@@ -100,7 +101,7 @@ col_left, col_right = st.columns([1, 1])
 
 with col_left:
     st.markdown("**花費分布（箱形圖）**")
-    with st.expander("💡 箱形圖說明"):
+    with st.expander("箱形圖說明"):
         st.markdown("中間橫線 = 中位數；箱子 = 25%-75% 分位數；鬍鬚 = 最大/最小值；圓點 = 離群值")
     try:
         if "fig_spend_box" not in st.session_state:
@@ -112,7 +113,7 @@ with col_left:
 
 with col_right:
     st.markdown("**花費佔比（圓餅圖）**")
-    with st.expander("💡 花費佔比的意義"):
+    with st.expander("花費佔比的意義"):
         st.markdown("花費佔比高的頻道，在設定先驗分佈時會給較大的 sigma（允許更強的效果）")
     try:
         if "fig_spend_pie" not in st.session_state:
@@ -135,5 +136,5 @@ spend_summary = pd.DataFrame({
 st.dataframe(spend_summary, use_container_width=True, hide_index=True)
 
 st.divider()
-st.success("✅ 資料確認完成！")
-st.page_link("pages/02_模型擬合.py", label="前往「模型擬合」訓練 MMM 模型 →", icon="⚙️")
+st.success("資料確認完成！")
+st.page_link("pages/02_模型擬合.py", label="前往「模型擬合」訓練 MMM 模型 →", icon=":material/model_training:")

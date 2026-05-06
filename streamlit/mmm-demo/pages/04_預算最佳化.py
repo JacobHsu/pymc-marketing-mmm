@@ -12,18 +12,19 @@ import matplotlib.pyplot as plt
 from components.matplotlib_config import configure_matplotlib_fonts
 from pymc_marketing.mmm.multidimensional import MultiDimensionalBudgetOptimizerWrapper
 from components.progress import render_sidebar_progress
+from components.ui_helpers import icon_title
 
 configure_matplotlib_fonts()
 
 st.set_page_config(page_title="預算最佳化", page_icon="💰", layout="wide")
 render_sidebar_progress()
 
-st.title("💰 預算最佳化")
+icon_title("savings", "預算最佳化")
 st.markdown("輸入你的總廣告預算，模型會幫你找出讓銷售最大化的頻道分配方案。")
 
 if "mmm" not in st.session_state:
-    st.warning("⬅️ 請先到「模型擬合」頁面訓練模型。")
-    st.page_link("pages/02_模型擬合.py", label="前往模型擬合", icon="⚙️")
+    st.warning("請先到「模型擬合」頁面訓練模型。")
+    st.page_link("pages/02_模型擬合.py", label="前往模型擬合", icon=":material/model_training:")
     st.stop()
 
 mmm = st.session_state["mmm"]
@@ -31,7 +32,7 @@ data = st.session_state["data"]
 channel_cols = st.session_state.get("channel_columns", ["x1", "x2"])
 
 # ── 說明 ───────────────────────────────────────────────────────────────────
-with st.expander("💡 預算最佳化是怎麼運作的？", expanded=True):
+with st.expander("預算最佳化是怎麼運作的？", expanded=True):
     st.markdown("""
 **核心概念**：透過模型學到的飽和曲線（Response Curve），找到讓銷售最大化的預算分配。
 
@@ -67,18 +68,18 @@ with col2:
     st.metric("現有總花費（標準化）", f"{current_total:.3f}")
     st.metric("目標總預算（標準化）", f"{total_budget:.3f}")
     if budget_multiplier > 1.0:
-        st.caption(f"📈 增加 {(budget_multiplier - 1) * 100:.0f}% 預算")
+        st.caption(f"增加 {(budget_multiplier - 1) * 100:.0f}% 預算")
     elif budget_multiplier < 1.0:
-        st.caption(f"📉 削減 {(1 - budget_multiplier) * 100:.0f}% 預算")
+        st.caption(f"削減 {(1 - budget_multiplier) * 100:.0f}% 預算")
     else:
-        st.caption("➡️ 維持現有總預算")
+        st.caption("維持現有總預算")
 
 st.divider()
 
 # ── 執行最佳化 ─────────────────────────────────────────────────────────────
 st.subheader("執行最佳化")
 
-optimize_btn = st.button("🔍 計算最佳預算配置", type="primary", use_container_width=True)
+optimize_btn = st.button("計算最佳預算配置", type="primary", use_container_width=True, icon=":material/search:")
 
 if optimize_btn:
     with st.spinner("正在計算最佳配置..."):
@@ -105,7 +106,7 @@ if optimize_btn:
 
             st.session_state["budget_result"] = {"simulated": False, "allocation": allocation}
             st.session_state["budget_total"] = total_budget
-            st.success("✅ 最佳化完成！")
+            st.success("最佳化完成！")
 
         except Exception as e:
             st.error(f"最佳化失敗：{e}")
@@ -121,7 +122,7 @@ if "budget_result" in st.session_state:
 
     is_simulated = result.get("simulated", False)
     if is_simulated:
-        st.info("ℹ️ 以下為**教學示意**結果（模擬），實際結果需要完整資料和更多採樣次數。")
+        st.info("以下為**教學示意**結果（模擬），實際結果需要完整資料和更多採樣次數。")
     allocation = result["allocation"]
 
     # 比較現有 vs 最佳配置
@@ -182,21 +183,21 @@ if "budget_result" in st.session_state:
     st.divider()
 
     # 建議摘要
-    st.subheader("📋 配置建議摘要")
+    st.subheader("配置建議摘要")
     for _, row in comparison_df.iterrows():
         change_pct = row["增減 (%)"]
         if change_pct > 5:
-            emoji = "📈"
+            indicator = "↑"
             advice = f"建議**增加**投入，ROAS 較高"
         elif change_pct < -5:
-            emoji = "📉"
+            indicator = "↓"
             advice = f"建議**削減**投入，資金轉移到效益更高的頻道"
         else:
-            emoji = "➡️"
+            indicator = "→"
             advice = f"接近最佳配置，**維持現狀**即可"
 
-        st.markdown(f"{emoji} **頻道 {row['頻道']}**：{advice}（建議調整 {change_pct:+.1f}%）")
+        st.markdown(f"{indicator} **頻道 {row['頻道']}**：{advice}（建議調整 {change_pct:+.1f}%）")
 
 st.divider()
 st.markdown("---")
-st.markdown("**🎓 學習重點**：預算最佳化是 MMM 最有商業價值的應用，它把統計模型轉化為可執行的行動建議。")
+st.markdown("**學習重點**：預算最佳化是 MMM 最有商業價值的應用，它把統計模型轉化為可執行的行動建議。")

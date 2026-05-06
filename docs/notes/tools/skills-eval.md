@@ -191,3 +191,24 @@
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：新專案第一次設定部署；換平台後重新文件化；為 `/land-and-deploy` 做前置設定
 - **驗證日期**：2026-05-06
+
+### design-shotgun（gstack）
+- **來源**：gstack
+- **任務**：將 mmm-demo 5 頁 Streamlit UI 從 emoji 風格重做為 Material Icons + C-style 企業 UI（深色側邊欄、淺灰主區、藍色強調色）
+- **呼叫方式**：Skill tool
+- **效果**：
+  - 建立 `components/ui_helpers.py`（`icon_title`、`icon_header`、`icon_subheader` 三個 HTML helper），用 Material Symbols Rounded 字型渲染圖示
+  - 修改 `app.py`、所有 5 個頁面檔案：emoji → Material Icons，`st.button` / `st.page_link` 改用 `:material/xxx:` 語法
+  - 解決 `<h1>/<h3>` flex 垂直置中問題（改用 `<div>` container + `display:block` icon span）
+  - 翻譯 `docs/install/gstack.zh-tw.md`（完整繁體中文版）
+- **優點**：
+  - 設計決策明確（字型大小對齊 Streamlit theme：title=2.25rem、header=1.75rem、subheader=1.5rem）
+  - 先確認技術可行性（驗證 Streamlit 本地 woff2、`font-family:'Material Symbols Rounded'`、ligature 渲染機制）再動手
+  - 遇到 `st.title(icon=)` 不支援的技術限制，提出 `unsafe_allow_html` HTML helper 替代方案
+- **限制**：
+  - `st.title()`、`st.header()`、`st.subheader()` 原生不支援 `icon=` 參數，必須繞道 HTML 注入
+  - 垂直置中問題需多次試錯（inline-flex → display:block → `<div>` container）
+  - Windows PowerShell 環境 preamble 部分須跳過（bash 限定）；C-style 全域 CSS 需透過 `components/progress.py` 注入，跨頁面樣式需統一管控
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：UI 整體風格升級；從 prototype emoji 風格升至企業匯報品質；需要設計系統一致性的多頁 Streamlit 應用
+- **驗證日期**：2026-05-06
