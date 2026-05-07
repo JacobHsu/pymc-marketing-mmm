@@ -235,3 +235,18 @@
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
 - **適合場景**：UI 重構前後的效能回歸對比；建立效能基準讓 CI 可守門；找出特定頁面的慢載入根因（透過 ResourceTiming entries）
 - **驗證日期**：2026-05-07
+
+### document-release（gstack）
+- **來源**：gstack
+- **任務**：對 mmm-demo 產品化實驗（iterations 4b–8）後的文件做整體同步與修正
+- **呼叫方式**：Skill tool
+- **效果**：
+  - `streamlit/mmm-demo/README.zh-TW.md`：移除重複行、補齊目錄結構（run.ps1、ui_helpers.py、progress.py、tests/）、修正 AI expander 標籤（移除 emoji）
+  - `.claude/CLAUDE.md`：修正過時路徑（sandbox/streamlit_demo → streamlit/mmm-demo）
+  - `docs/notes/workflow/best-practices.md`：流水線從 6 步擴展至 9 步、安全掃描對比修正為完成
+  - `docs/notes/workflow/action-plan.md`：tasks 5/8 標記完成、task 9 進行中
+- **優點**：自動偵測過時路徑、重複行、目錄結構缺漏；分類 auto-update（直接修正）vs ask-user（風險變更）；跨文件一致性檢查（action-plan vs README vs best-practices）
+- **限制**：on main branch 時 PR 相關步驟（body update、title sync）無法執行；`gh auth` 未設定則無法操作 GitHub PR；需要先了解整個實驗 context 才能判斷哪些是 stale（不能盲目信任 diff）
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
+- **適合場景**：多次迭代後的文件整體同步；發現路徑、標籤、目錄結構等 factual 錯誤；跨文件狀態（任務進度）一致性維護
+- **驗證日期**：2026-05-07

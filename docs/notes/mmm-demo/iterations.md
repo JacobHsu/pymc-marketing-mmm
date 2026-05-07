@@ -289,3 +289,33 @@
 - localhost 環境 dns/tcp 均為 0ms，ttfb 即為 Streamlit Python server 的純處理時間
 - `$B eval` 多行 JS 在 Windows 環境有相容性問題（exit code 1），ResourceTiming entries 無法取得；可改用 `$B js` 語法或避開多行 JSON.stringify
 - baseline 數據只有參考意義（本機開發環境），生產環境效能需另外量測
+
+## Iteration 9 — 2026-05-07（action-plan #9）
+
+**目標**：同步 iterations 4b–8 後的所有文件，確保 README、目錄結構、任務狀態跨文件一致
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `document-release` | gstack | skill | 文件審查、factual 修正、跨文件一致性檢查 |
+
+### 改動
+- `streamlit/mmm-demo/README.zh-TW.md`：移除重複行；目錄結構加入 `run.ps1`、`components/progress.py`、`components/ui_helpers.py`、`tests/`；修正 AI expander 標籤（移除 🤖 emoji，與程式碼一致）
+- `.claude/CLAUDE.md`：修正過時路徑（`sandbox/streamlit_demo/` → `streamlit/mmm-demo/`）
+- `docs/notes/workflow/best-practices.md`：流水線從 6 步擴展至 9 步（加入 4b/5/8）；安全掃描對比狀態修正為「完成」
+- `docs/notes/workflow/action-plan.md`：tasks 5/8 標記完成，task 9 更新為進行中
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| README 目錄結構準確度 | 缺少 3 個新元件 + tests/ | 完整（8 個檔案）|
+| 過時路徑 | sandbox/streamlit_demo（不存在）| streamlit/mmm-demo（正確）|
+| AI expander 標籤 | 🤖 AI 行銷洞察（emoji） | AI 行銷洞察（與程式碼一致）|
+| 流水線步驟數 | 6 步 | 9 步（完整反映所有已完成 task）|
+| 跨文件一致性 | task 5/8 狀態不一致 | 全部同步 |
+
+### 心得
+- `document-release` 的 auto-update vs ask-user 分類邏輯有效：明確 factual 錯誤直接修正，不詢問
+- on main branch 直接工作時，PR body/title update 步驟可跳過（不阻塞流程）
+- 跨文件狀態一致性（action-plan vs README vs best-practices）是最容易遺漏的 doc debt
+- 需要 domain context 才能正確判斷哪些路徑是 stale，純靠 diff 不夠
