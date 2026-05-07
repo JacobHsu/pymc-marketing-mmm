@@ -39,7 +39,7 @@
 
 | # | 任務 | 工具 | 類型 | 狀態 |
 |---|------|------|------|------|
-| 01b | 工具對比：code review | `review` skill（gstack） vs `python-review` | 重構 | 待開始 |
+| 01b | 工具對比：code review | `review` skill（gstack） vs `python-review` | 重構 | 完成 |
 | 04b | UI 風格重做 | `design-shotgun` skill（gstack） | UI | 完成 |
 
 ---
@@ -50,6 +50,6 @@
 
 | 任務 | 工具 A | 工具 B | 對比目標 | 狀態 |
 |------|--------|--------|---------|------|
-| Code review | `python-review`（內建） | `review`（gstack） | 發現問題的深度與數量 | 待開始（見支線 01b） |
+| Code review | `python-review`（內建） | `review`（gstack） | 發現問題的深度與數量 | 完成（見 [01b](../tasks/01b-code-review-compare.md)） |
 | 安全掃描 | `security-review`（內建） | `cso`（gstack） | OWASP 覆蓋範圍 | 完成 |
 | 重構 | `refactor-clean`（內建） | `refactor-cleaner` agent（本地） | 產出品質與速度 | 待開始 |

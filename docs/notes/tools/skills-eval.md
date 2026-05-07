@@ -30,7 +30,7 @@
 
 | 假設 | 預期 | 實際結果 |
 |------|------|---------|
-| gstack `review` 比內建 `python-review` 找到更多問題 | gstack 有角色設定更深入 | 待驗證 |
+| gstack `review` 比內建 `python-review` 找到更多問題 | gstack 有角色設定更深入 | **部分成立**：/review 獨有 2 項 runtime 風險（IndexError、timeout），但 python-review 型別分析更深（2 HIGH）；兩者互補 |
 | gstack `cso` 比內建 `security-review` 覆蓋更廣 | gstack 有 OWASP+STRIDE 雙框架 | 待驗證 |
 | `refactor-clean` 一次跑完整檔案比手動快 | 省 50%+ 時間 | 待驗證 |
 | `tdd-workflow` 強制先寫測試比直接寫 code 品質更高 | 覆蓋率更高、bug 更少 | 待驗證 |
@@ -271,6 +271,17 @@
 - **限制**：on main branch 時 PR 相關步驟（body update、title sync）無法執行；`gh auth` 未設定則無法操作 GitHub PR；需要先了解整個實驗 context 才能判斷哪些是 stale（不能盲目信任 diff）
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：多次迭代後的文件整體同步；發現路徑、標籤、目錄結構等 factual 錯誤；跨文件狀態（任務進度）一致性維護
+- **驗證日期**：2026-05-07
+
+### review（gstack）
+- **來源**：gstack
+- **任務**：對 `ai_analysis.py` 進行 Staff Engineer 角色 code review，與 `python-review` 對比（支線 01b）
+- **呼叫方式**：Skill tool — 但需 branch diff；main branch 無 diff 時 skill 自動停止；本次改以直接讀檔 + 手動套用 checklist
+- **效果**：發現 2 個 python-review 未抓到的 production runtime 問題：(1) `response.choices[0]` IndexError（API 回空 choices 時 crash）；(2) 無 `timeout` 參數（網路問題時無限掛起）；與 python-review 重疊 2 項（client 未快取、缺 error handling）
+- **優點**：runtime 風險思維強（timeout、IndexError、掛起），比 python-review 更貼近生產部署視角；角色設定（Staff Engineer）讓 review 不只看 style，也看 failure mode
+- **限制**：**必須在非 main branch 且有 uncommitted diff 才能執行**；main branch 直接跑無效（設計如此）；型別標注分析不如 python-review 深（未獨立發現 HIGH 型別問題）；file-direct 手動代讀效果 ≈ 75%（缺 AI 角色加持）
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐（前提是要在對的 branch 執行）
+- **適合場景**：feature branch 開發過程中；PR 建立前的 production risk 掃描；與 python-review 搭配使用（python-review 先掃型別，/review 再掃 runtime 風險）
 - **驗證日期**：2026-05-07
 
 ### retro（gstack）
