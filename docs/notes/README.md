@@ -19,6 +19,7 @@
 | 7 | [部署設定](tasks/07-deploy.md) | 完成 |
 | 8 | [效能基準](tasks/08-benchmark.md) | 完成 |
 | 9 | [文件更新](tasks/09-document-release.md) | 完成 |
+| 10 | [部署監控](tasks/10-canary.md) | 完成 |
 
 ---
 

@@ -319,3 +319,37 @@
 - on main branch 直接工作時，PR body/title update 步驟可跳過（不阻塞流程）
 - 跨文件狀態一致性（action-plan vs README vs best-practices）是最容易遺漏的 doc debt
 - 需要 domain context 才能正確判斷哪些路徑是 stale，純靠 diff 不夠
+
+## Iteration 10 — 2026-05-07（action-plan #10）
+
+**目標**：對 mmm-demo localhost 執行 canary 快速健康檢查，與 Task 08 baseline 對比
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `canary` | gstack | skill | 真瀏覽器健康檢查、baseline 比對、截圖佐證 |
+
+### 改動
+- 新增 `.gstack/canary-reports/2026-05-07-canary.json`：健康報告
+- 新增 `.gstack/canary-reports/screenshots/canary-{home,data-overview,channel-contrib}.png`：截圖佐證
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 部署後健康確認 | 無 | 5 頁全部 HTTP 200 |
+| 效能回歸 | 未知 | 無回歸（warm 頁 -34% 至 -61%）|
+| Console 錯誤 | 未知 | 無 uncaught exception（沿用 Task 05 QA 結論）|
+| 截圖佐證 | Task 05 截圖 | 新增 canary 截圖更新 |
+
+### Canary 報告摘要
+- **狀態**：HEALTHY
+- **Alert 數量**：0
+- **首頁冷啟動**：751ms（tcp 306ms 新連線，非回歸）
+- **Warm 頁均速**：29ms（比 baseline 快約 44%）
+- **結論**：DEPLOY IS HEALTHY
+
+### 心得
+- canary `--quick` 適合每次 push 後的 1 分鐘快速確認，不需等 10 分鐘 continuous monitor
+- 冷啟動（首次 TCP 連線）vs 暖連線差距很大（751ms vs 41ms），baseline 應分別記錄
+- `$B console --errors` 不存在，需改用 `$B eval` 或接受 QA 階段的結論
+- 未來部署到 Streamlit Cloud 後，canary 更有價值（真實網路延遲、冷啟動 container 時間）

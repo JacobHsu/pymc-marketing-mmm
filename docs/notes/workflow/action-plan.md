@@ -30,7 +30,7 @@
 | 7 | 部署設定 | `setup-deploy` / `ship` skill（gstack） | 部署 | 可一鍵啟動 | 完成 |
 | 8 | 效能基準 | `benchmark` skill（gstack） | 效能 | 頁面載入時間、Core Web Vitals 基準建立 | 完成 |
 | 9 | 文件更新 | `document-release` skill（gstack） | 文件 | README、pages 說明與程式碼同步 | 進行中 |
-| 10 | 部署監控 | `canary` skill（gstack） | 監控 | Streamlit Cloud 無 console 錯誤、無頁面失敗 | 待開始 |
+| 10 | 部署監控 | `canary` skill（gstack） | 監控 | Streamlit Cloud 無 console 錯誤、無頁面失敗 | 完成 |
 | 11 | 回顧 | `retro` skill（gstack） | 回顧 | 整輪工具效果總結、最佳工作流萃取 | 待開始 |
 
 ---

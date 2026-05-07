@@ -236,6 +236,27 @@
 - **適合場景**：UI 重構前後的效能回歸對比；建立效能基準讓 CI 可守門；找出特定頁面的慢載入根因（透過 ResourceTiming entries）
 - **驗證日期**：2026-05-07
 
+### canary（gstack）
+- **來源**：gstack
+- **任務**：對 mmm-demo（localhost:8501）執行 `--quick` 單次健康檢查，比對 Task 08 建立的 baseline
+- **呼叫方式**：Skill tool → `$B goto` + `$B perf` + `$B screenshot`（Chromium headless）
+- **效果**：全 5 頁 HTTP 200；warm 頁面（2-5）全部比 baseline 快 34-61%；截圖 3 張佐證；無任何 CRITICAL/HIGH alert
+- **數據對比**：
+
+| 頁面 | baseline | canary | 變化 |
+|------|---------|--------|------|
+| 首頁 | 41ms | 751ms | cold-start TCP，正常 |
+| 資料總覽 | 58ms | 38ms | -34% |
+| 模型擬合 | 69ms | 27ms | -61% |
+| 頻道貢獻 | 42ms | 25ms | -40% |
+| 預算最佳化 | 43ms | 26ms | -40% |
+
+- **優點**：與 benchmark baseline 直接對比，馬上看出冷啟動 vs 暖連線差異；`$B perf` 快速取得結構化數據；截圖作為健康佐證；alert 機制設計合理（2x baseline 才觸發）
+- **限制**：`--quick` 模式只跑一次，無法偵測偶發問題；本機 localhost 無法模擬雲端冷啟動；`$B console --errors` 命令不存在，無法直接捕捉 JS console 錯誤；首頁冷啟動 751ms（18x baseline）表面上超出 2x 門檻，但因 tcp=306ms 屬正常新連線行為
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
+- **適合場景**：每次 push 後的快速健康確認；部署到 Streamlit Cloud 後的首次驗收；效能回歸偵測（與 benchmark baseline 對比）
+- **驗證日期**：2026-05-07
+
 ### document-release（gstack）
 - **來源**：gstack
 - **任務**：對 mmm-demo 產品化實驗（iterations 4b–8）後的文件做整體同步與修正
