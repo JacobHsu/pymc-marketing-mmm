@@ -16,8 +16,8 @@ Every time a code change is verified to work, **immediately update the relevant 
 - New parameter added → add to the parameter table and summary
 
 The target doc files for the Streamlit demo are:
-- `sandbox/streamlit_demo/README.zh-CN.md` — setup, startup, FAQ
-- Page files (`pages/*.py`) — inline `st.markdown` descriptions
+- `streamlit/mmm-demo/README.zh-TW.md` — setup, startup, FAQ
+- Page files (`streamlit/mmm-demo/pages/*.py`) — inline `st.markdown` descriptions
 
 Do not wait until the end of a conversation. Update docs **in the same step** as the code change.
 

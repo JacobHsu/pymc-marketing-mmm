@@ -22,8 +22,6 @@
 
 瀏覽器自動開啟 `http://localhost:8501`。停止服務按 `Ctrl + C`。
 
-瀏覽器自動開啟 `http://localhost:8501`。停止服務按 `Ctrl + C`。
-
 ---
 
 ## 第一次環境建置（Windows + conda）
@@ -78,7 +76,7 @@ streamlit run app.py
 
 **取得 API Key：** [build.nvidia.com](https://build.nvidia.com) → 右上角 API Keys → 建立（格式 `nvapi-...`）
 
-**使用：** 進入「頻道貢獻」頁面 → 展開「🤖 AI 行銷洞察」→ 貼上 Key → 開始分析
+**使用：** 進入「頻道貢獻」頁面 → 展開「AI 行銷洞察」→ 貼上 Key → 開始分析
 
 **免每次輸入，用 `.env` 設定：**
 
@@ -94,6 +92,7 @@ cp .env.sample .env
 ```text
 streamlit/mmm-demo/
 ├── app.py                   # 主入口
+├── run.ps1                  # 一鍵啟動腳本（Windows PowerShell）
 ├── requirements.txt         # 雲端部署依賴
 ├── .env.sample              # 環境變數範本
 ├── pages/
@@ -105,7 +104,13 @@ streamlit/mmm-demo/
 │   ├── mmm_runner.py        # MMM 建模（含 HF Hub 自動下載模型）
 │   ├── ai_analysis.py       # AI 行銷洞察
 │   ├── charts.py            # 圖表
+│   ├── progress.py          # 側邊欄進度步驟
+│   ├── ui_helpers.py        # Material Icons 標題 helper
 │   └── matplotlib_config.py # 中文字型設定
+├── tests/
+│   ├── test_mmm_runner.py   # 單元測試（31 個測試，71% coverage）
+│   └── e2e/
+│       └── test_navigation.py # E2E 測試（15 個測試，Playwright）
 └── data/
     ├── mock_cgp_data.csv    # 預設資料（8 頻道）
     └── fitted_mmm.nc        # 已擬合模型（本機用，不進 git）

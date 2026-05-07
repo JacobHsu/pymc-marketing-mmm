@@ -6,7 +6,7 @@
 
 ## 已驗證工作流
 
-### 完整產品化流水線（6 task 實驗總結）
+### 完整產品化流水線（9 task 實驗，進行中）
 
 > 對一個現有 Streamlit demo 做完整品質提升，從重構到部署，依序執行以下工作流。
 
@@ -16,10 +16,13 @@
 | 2 | 安全掃描 | `security-review`（日常）/ `cso`（月度） | 無洩漏風險確認 |
 | 3 | 單元測試 | `tdd-workflow` | 31 tests，testable 函數 100% 覆蓋 |
 | 4 | UI 審查 | `design-review`（gstack） | 截圖驅動，發現 2 個 HIGH 問題並修復 |
-| 5 | E2E 測試 | `e2e-runner` agent | 15 tests，覆蓋 5 頁核心流程 |
-| 6 | 本機啟動腳本 | 手動建 `run.ps1` | 3 行指令合成 1 行 |
+| 4b | UI 風格重做 | `design-shotgun`（gstack） | emoji → Material Icons，企業匯報品質 |
+| 5 | 真瀏覽器 QA | `qa`（gstack） | 5 頁截圖佐證，無 uncaught exception |
+| 6 | E2E 測試 | `e2e-runner` agent | 15 tests，覆蓋 5 頁核心流程 |
+| 7 | 本機啟動腳本 | `setup-deploy`（gstack）+ 手動建 `run.ps1` | 一鍵啟動 |
+| 8 | 效能基準 | `benchmark`（gstack） | 5 頁 baseline avg 51ms，< 70ms |
 
-**原則**：先清再建 → 先安全再功能 → 先單元再 E2E → 先本地再部署
+**原則**：先清再建 → 先安全再功能 → 先單元再 E2E → 先 QA 再自動化 → 先本地再部署
 
 ---
 
@@ -99,6 +102,6 @@
 | 任務 | 工具 A | 工具 B | 對比目標 | 狀態 |
 |------|--------|--------|---------|------|
 | Code review | `python-review`（內建） | `review`（gstack） | 發現問題深度與數量 | 待驗證 |
-| 安全掃描 | `security-review`（內建） | `cso`（gstack） | OWASP 覆蓋範圍 | 待驗證 |
+| 安全掃描 | `security-review`（內建） | `cso`（gstack） | OWASP 覆蓋範圍 | 完成 |
 | 重構 | `refactor-clean` skill（內建） | `refactor-cleaner` agent（本地） | 產出品質與速度 | 待驗證 |
 | Agent review | `code-reviewer`（本地） | `Code Reviewer`（agency-agents） | 角色化設定的影響 | 待驗證 |

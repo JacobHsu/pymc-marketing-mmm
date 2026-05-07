@@ -25,11 +25,11 @@
 | 2 | 安全掃描 | `security-review` skill vs `cso` skill（gstack） | 安全 | 無 hardcode key、有 `.env` 防護 | 完成 |
 | 3 | 單元測試 | `tdd-workflow` skill | 測試 | coverage ≥ 80% | 完成 |
 | 4 | UI 審查 | `design-review` skill（gstack） | UI | 有截圖佐證，列出問題清單 | 完成 |
-| 5 | 真瀏覽器 QA | `qa` skill（gstack） | 測試 | 5 頁流程截圖，無 uncaught exception | 待開始 |
+| 5 | 真瀏覽器 QA | `qa` skill（gstack） | 測試 | 5 頁流程截圖，無 uncaught exception | 完成 |
 | 6 | E2E 自動化測試 | `e2e-runner` agent | 測試 | 15 個測試全 PASSED | 完成 |
 | 7 | 部署設定 | `setup-deploy` / `ship` skill（gstack） | 部署 | 可一鍵啟動 | 完成 |
-| 8 | 效能基準 | `benchmark` skill（gstack） | 效能 | 頁面載入時間、Core Web Vitals 基準建立 | 待開始 |
-| 9 | 文件更新 | `document-release` skill（gstack） | 文件 | README、pages 說明與程式碼同步 | 待開始 |
+| 8 | 效能基準 | `benchmark` skill（gstack） | 效能 | 頁面載入時間、Core Web Vitals 基準建立 | 完成 |
+| 9 | 文件更新 | `document-release` skill（gstack） | 文件 | README、pages 說明與程式碼同步 | 進行中 |
 | 10 | 部署監控 | `canary` skill（gstack） | 監控 | Streamlit Cloud 無 console 錯誤、無頁面失敗 | 待開始 |
 | 11 | 回顧 | `retro` skill（gstack） | 回顧 | 整輪工具效果總結、最佳工作流萃取 | 待開始 |
 
