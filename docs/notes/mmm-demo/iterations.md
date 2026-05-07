@@ -348,8 +348,55 @@
 - **Warm 頁均速**：29ms（比 baseline 快約 44%）
 - **結論**：DEPLOY IS HEALTHY
 
+### Cloud Canary 補充（2026-05-07）
+
+實際對 https://pymc-marketing-mmm.streamlit.app/ 執行雲端 canary：
+
+| 頁面 | domReady | 說明 |
+|------|---------|------|
+| 首頁 | 5499ms | container cold-start（免費方案 idle 重啟） |
+| 資料總覽 | 536ms | TTFB 350ms 為跨洋 RTT |
+| 模型擬合 | 493ms | 正常 |
+| 頻道貢獻 | 471ms | 正常 |
+| 預算最佳化 | 450ms | 正常 |
+
+**結論**：雲端 app HEALTHY；warm 頁 ~500ms 在可接受範圍（Streamlit Cloud 無台灣 edge）；冷啟動 5s 為免費方案特性，非 bug。
+
+## Iteration 11 — 2026-05-07（action-plan #11）
+
+**目標**：對整輪 mmm-demo 產品化實驗（Tasks 0–10）進行工程回顧，總結工具效果與工作模式
+
+### 使用工具
+| 工具 | 來源 | 類型 | 用途 |
+|------|------|------|------|
+| `retro` | gstack | skill | git log 分析、session 偵測、skill usage 彙整、趨勢輸出 |
+
+### 改動
+- 新增 `docs/notes/tasks/11-retro.md`：task 文件（完成條件 + retro 摘要）
+- 新增 `.context/retros/2026-05-07-1.json`：機器可讀 snapshot（.gitignore 排除）
+- 更新 `.gitignore`：加入 `.context/` 排除
+- 更新 `docs/notes/tools/skills-eval.md`：新增 retro 評比
+- 更新 `docs/notes/workflow/action-plan.md`：Task 11 標記完成
+- 更新 `docs/notes/README.md`：Task 11 標記完成
+
+### 品質變化
+| 指標 | Before | After |
+|------|--------|-------|
+| 整輪工具效果總結 | 無 | 有（11 個 skill 全部有評比記錄） |
+| 工作模式可視化 | 無 | 8 sessions、commit type 分布、hotspot |
+| 下輪改善點 | 無 | 3 個具體行動（gstack snooze、cloud baseline、E2E fixture） |
+
+### 心得
+- retro skill 的 session 偵測（45 分鐘 gap）精準：8 個 session 對應實際工作節奏
+- raw LOC（681k）因 repo import 嚴重失真，需人工判斷；實際開發 LOC ~3,100
+- `.context/retros/` JSON 人類不可讀，需要同步建 task 文件才算「完成」；retro skill 本身不會自動建 task 文件，這是流程缺口
+- 首次 retro 沒有 prior history 可比較；下輪再跑才能看趨勢 delta
+
+---
+
 ### 心得
 - canary `--quick` 適合每次 push 後的 1 分鐘快速確認，不需等 10 分鐘 continuous monitor
 - 冷啟動（首次 TCP 連線）vs 暖連線差距很大（751ms vs 41ms），baseline 應分別記錄
+- localhost 數據與雲端差距約 10x（TTFB 差異），baseline 應分 local/cloud 兩份才有意義
 - `$B console --errors` 不存在，需改用 `$B eval` 或接受 QA 階段的結論
-- 未來部署到 Streamlit Cloud 後，canary 更有價值（真實網路延遲、冷啟動 container 時間）
+- Streamlit Community Cloud 免費方案 container idle 後冷啟動需 5s，這是平台限制非程式問題

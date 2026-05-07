@@ -2,7 +2,7 @@
 
 以互動網頁展示完整 Media Mix Modeling（MMM）工作流程：載入行銷資料 → 擬合模型 → 分析通路 ROAS → 預算最佳化。
 
-線上版本（部署後）：待補
+線上版本：https://pymc-marketing-mmm.streamlit.app/
 
 ---
 

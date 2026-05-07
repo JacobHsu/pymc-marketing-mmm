@@ -251,10 +251,11 @@
 | 頻道貢獻 | 42ms | 25ms | -40% |
 | 預算最佳化 | 43ms | 26ms | -40% |
 
-- **優點**：與 benchmark baseline 直接對比，馬上看出冷啟動 vs 暖連線差異；`$B perf` 快速取得結構化數據；截圖作為健康佐證；alert 機制設計合理（2x baseline 才觸發）
-- **限制**：`--quick` 模式只跑一次，無法偵測偶發問題；本機 localhost 無法模擬雲端冷啟動；`$B console --errors` 命令不存在，無法直接捕捉 JS console 錯誤；首頁冷啟動 751ms（18x baseline）表面上超出 2x 門檻，但因 tcp=306ms 屬正常新連線行為
+- **Cloud 數據**（https://pymc-marketing-mmm.streamlit.app/）：首頁 5499ms（container cold-start）、warm 頁 450–536ms（TTFB ≈ 350ms 為跨洋 RTT）、全 5 頁 HEALTHY
+- **優點**：與 benchmark baseline 直接對比，馬上看出冷啟動 vs 暖連線差異；`$B perf` 快速取得結構化數據；截圖作為健康佐證；alert 機制設計合理（2x baseline 才觸發）；同一 skill 可同時跑 localhost 和 cloud URL
+- **限制**：`--quick` 模式只跑一次，無法偵測偶發問題；`$B console --errors` 命令不存在，無法直接捕捉 JS console 錯誤；localhost baseline 與 cloud 數據差距 10x，需分別建立兩份 baseline 才有意義
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
-- **適合場景**：每次 push 後的快速健康確認；部署到 Streamlit Cloud 後的首次驗收；效能回歸偵測（與 benchmark baseline 對比）
+- **適合場景**：每次 push 後的快速健康確認；部署後的雲端首次驗收；localhost 與生產環境效能差異量化
 - **驗證日期**：2026-05-07
 
 ### document-release（gstack）
@@ -270,4 +271,15 @@
 - **限制**：on main branch 時 PR 相關步驟（body update、title sync）無法執行；`gh auth` 未設定則無法操作 GitHub PR；需要先了解整個實驗 context 才能判斷哪些是 stale（不能盲目信任 diff）
 - **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐
 - **適合場景**：多次迭代後的文件整體同步；發現路徑、標籤、目錄結構等 factual 錯誤；跨文件狀態（任務進度）一致性維護
+- **驗證日期**：2026-05-07
+
+### retro（gstack）
+- **來源**：gstack
+- **任務**：對 mmm-demo 產品化實驗（7 天，2026-04-30 → 2026-05-07）執行工程回顧
+- **呼叫方式**：Skill tool → git log + shortstat + session 偵測 + skill usage analytics
+- **效果**：17 commits、8 sessions、feat 53%/docs 24%、skill usage 彙整（/benchmark /canary /document-release）、Ship of Week 自動識別（design-shotgun）、3 改善點 + 3 下週習慣
+- **優點**：自動從 git log 萃取所有指標，不需人工整理；session 偵測（45 分鐘 gap）準確區分 deep/medium/micro；skill-usage.jsonl 整合讓工具效果可視化；snapshot JSON 供未來趨勢對比
+- **限制**：repo import commit（674k LOC）會嚴重扭曲 raw LOC 指標，需手動排除解讀；test ratio 計算以 test 關鍵字判斷，對 Streamlit 頁面類型不精確；`.context/retros/` JSON 人類不可讀，需另建 task 文件補充
+- **評分**：效果 ⭐⭐⭐⭐ / 省時 ⭐⭐⭐⭐⭐
+- **適合場景**：每輪開發週期結束後的整體回顧；solo 專案追蹤個人工作模式；建立跨週趨勢基準
 - **驗證日期**：2026-05-07

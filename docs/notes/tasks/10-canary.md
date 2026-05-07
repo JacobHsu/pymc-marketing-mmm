@@ -44,6 +44,24 @@ Streamlit app 在本機運行：http://localhost:8501
 | 頻道貢獻 | HEALTHY | 25ms |
 | 預算最佳化 | HEALTHY | 26ms |
 
+## Cloud Canary 結果（2026-05-07）
+
+**目標**：https://pymc-marketing-mmm.streamlit.app/  
+**狀態：HEALTHY / 0 CRITICAL alerts**
+
+| 頁面 | domReady | 備注 |
+|------|---------|------|
+| 首頁 | 5499ms | Streamlit Cloud container 冷啟動 |
+| 資料總覽 | 536ms | ttfb ≈ 350ms（跨洲 CDN） |
+| 模型擬合 | 493ms | 正常 |
+| 頻道貢獻 | 471ms | 正常 |
+| 預算最佳化 | 450ms | 正常 |
+
+**與 localhost baseline 差異說明**：
+- Warm 頁 450–536ms vs localhost 25–58ms（差 ~10x）為預期：Streamlit Cloud 在台灣無 edge node，TTFB ≈ 350ms 是跨洋 RTT
+- 首頁 5499ms 為 container cold-start，是 Streamlit Community Cloud 免費方案已知行為（idle 後 container 需重啟）
+- 截圖佐證：`.gstack/canary-reports/screenshots/cloud/canary-cloud-{home,data,channel}.png`
+
 ## 完成後
 
 → 前往 [Task 11](11-retro.md)

@@ -1,6 +1,9 @@
 # Refact IDE
 .refact/
 
+# gstack retro snapshots (machine-readable, for trend comparison)
+.context/
+
 # MLflow logging
 mlruns/
 mlruns.db
