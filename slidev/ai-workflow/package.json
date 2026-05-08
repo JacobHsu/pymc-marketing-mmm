@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "slidev --open",
-    "build": "slidev build --base /pymc-marketing-mmm/slides/",
+    "build": "slidev build --base /pymc-marketing-mmm/",
     "export": "slidev export"
   },
   "dependencies": {

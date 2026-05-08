@@ -22,4 +22,4 @@ npm run dev
 
 Push 到 `main` branch 後，GitHub Actions 自動部署到：
 
-https://jacobhsu.github.io/pymc-marketing-mmm/slides/
+https://jacobhsu.github.io/pymc-marketing-mmm/

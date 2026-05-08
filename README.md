@@ -23,7 +23,7 @@
 
 以 [PyMC-Marketing](https://github.com/pymc-labs/pymc-marketing) 為核心，記錄用 AI 開發流程打造 MMM 互動 Demo 的完整實驗歷程。
 
-**[📊 mmm-demo 線上體驗](https://pymc-marketing-mmm.streamlit.app/)** · **[💻 slidev 簡報](https://jacobhsu.github.io/pymc-marketing-mmm/slides/)** 
+**<a href="https://pymc-marketing-mmm.streamlit.app/" target="_blank">📊 mmm-demo 線上體驗</a>** · **<a href="https://jacobhsu.github.io/pymc-marketing-mmm/" target="_blank">💻 slidev 簡報</a>**
 
 ---
 
