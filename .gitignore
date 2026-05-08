@@ -169,3 +169,8 @@ sandbox/
 .cursor/plans
 automatic_translation.py
 .gstack/
+
+# Node.js (Slidev presentations)
+node_modules/
+slidev/**/node_modules/
+slidev/**/dist/
